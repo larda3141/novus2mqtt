@@ -1,0 +1,37 @@
+name: Security
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    # Daily run catches new advisories against unchanged dependencies.
+    - cron: '17 6 * * *'
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@29eef336d9b2848a0b548edc03f92a220660cdb8  # stable
+
+      # taiki-e/install-action ships pre-built cargo-audit binaries, so we don't
+      # rebuild it from source every run (was ~5 min) and we get a pinned version.
+      - name: Install cargo-audit
+        uses: taiki-e/install-action@58e862542551f667fa44c8a2a4a1d64ad477c96a  # v2.75.17
+        with:
+          tool: cargo-audit
+
+      - name: Run dependency vulnerability audit
+        run: cargo audit

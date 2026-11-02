@@ -1,0 +1,57 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false  # don't cancel a release mid-publish
+
+permissions:
+  contents: write  # required to create the GitHub Release
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4.3.1
+
+      - name: Cross-build aarch64 release binary
+        uses: houseabsolute/actions-rust-cross@a8cc74d61047fa553b4e908b4b10e70029f00ca6  # v1.0.6
+        with:
+          target: aarch64-unknown-linux-gnu
+          args: --release --locked
+
+      - name: Stage release tarball
+        run: |
+          set -euo pipefail
+          version="${GITHUB_REF_NAME#v}"
+          dir="novus2mqtt-${version}-aarch64-linux"
+          mkdir -p "$dir"
+          cp target/aarch64-unknown-linux-gnu/release/novus2mqtt "$dir/"
+          cp -r config LICENSE README.md SETUP.md TROUBLESHOOTING.md .env.example "$dir/"
+          tar -czf "${dir}.tar.gz" "$dir"
+          sha256sum "${dir}.tar.gz" > "${dir}.tar.gz.sha256"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65  # v2.6.2
+        with:
+          files: |
+            novus2mqtt-*-aarch64-linux.tar.gz
+            novus2mqtt-*-aarch64-linux.tar.gz.sha256
+          body: |
+            Built from `${{ github.sha }}` on tag `${{ github.ref_name }}`.
+
+            ## Install
+            ```
+            tar xzf novus2mqtt-*-aarch64-linux.tar.gz
+            cd novus2mqtt-*-aarch64-linux
+            cp .env.example .env && chmod 600 .env  # then edit .env
+            ./novus2mqtt validate-config
+            ```
+
+            See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for changes.
+          generate_release_notes: true
+          fail_on_unmatched_files: true

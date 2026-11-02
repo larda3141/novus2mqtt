@@ -1,0 +1,2955 @@
+sensors:
+- address: '0x00'
+  payload:
+    length: 3
+    type: byte
+    class: version
+  topic: bus/system/bus_version
+  name: BUS Version
+  unique_id: sys_bus_version
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+      icon: mdi:information-outline
+  description: BUS Version
+- address: '0x03'
+  payload:
+    length: 11
+    type: char
+    class: text
+  topic: bus/devices/master/version
+  name: Master Version
+  unique_id: dev_master_version
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+      icon: mdi:information-outline
+  description: HW/SW-Version
+- address: '0x04'
+  payload:
+    length: 1
+    type: byte
+  topic: bus/devices/master/sub_version
+  expose_ha: false
+  name: Device Sub-Version (unconfirmed)
+  unique_id: dev_master_sub_version
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+  description: 'UNCONFIRMED: Likely device sub-version or config byte. Between Master Version (0x03) and Sensor Output (0x05). Needs verification against manual.'
+  tbc: true
+  suppress_activity: true
+  publish: false
+- address: '0x08'
+  payload:
+    length: 1
+    type: byte
+  topic: bus/system/boot_phase
+  expose_ha: false
+  name: Boot Phase Counter
+  unique_id: sys_boot_phase
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+  description: 'Boot/standby state flag. Observed values (2026-04-16): 0 during standby, 1 during reboot/startup. Formerly thought to be a boot-phase counter; now looks more like a two-state ''system up'' indicator. Write-ping address; broadcast at high rate.'
+- address: '0x09'
+  payload:
+    length: 16
+    type: byte
+    class: code
+  topic: bus/messages/current
+  name: Current Message
+  unique_id: msg_current
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+      icon: mdi:alert-circle-outline
+  description: Code of current message
+  throttle:
+    max_interval: 300
+  suppress_activity: true
+- address: '0x0a'
+  payload:
+    length: 16
+    type: byte
+    class: code
+  topic: bus/messages/error_n1/code
+  name: 'Error Message #1: Code'
+  unique_id: msg_error_n1_code
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+      icon: mdi:alert-circle-outline
+  description: Code of error message n-1
+- address: '0x0b'
+  payload:
+    length: 4
+    type: date
+    class: date
+  topic: bus/messages/error_n1/date
+  name: 'Error Message #1: Date'
+  unique_id: msg_error_n1_date
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+      icon: mdi:alert-circle-outline
+  description: Event date of error message n-1
+- address: '0x0c'
+  payload:
+    length: 3
+    type: time
+    class: time
+  topic: bus/messages/error_n1/time
+  name: 'Error Message #1: Time'
+  unique_id: msg_error_n1_time
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+      icon: mdi:alert-circle-outline
+  description: Event time of error message n-1
+- address: '0x0d'
+  payload:
+    length: 11
+    type: char
+    class: text
+  topic: bus/devices/control_unit_tft_1/version
+  name: 'TFT-ControlUnit#1: Version'
+  unique_id: dev_cu_tft_1_version
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+      icon: mdi:information-outline
+  description: HW/SW-Version
+- address: '0x0e'
+  payload:
+    length: 1
+    type: byte
+  topic: bus/devices/control_unit_tft_1/status
+  expose_ha: false
+  name: 'TFT Control Unit #1 Status'
+  unique_id: dev_cu_tft_1_status
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+  description: 'TFT Control Unit #1 status. Write-ping address. Value: 0x00 when device not present.'
+- address: '0x0f'
+  payload:
+    length: 1
+    type: byte
+  topic: bus/devices/control_unit_tft_1/extension
+  expose_ha: false
+  name: TFT Control Unit
+  unique_id: dev_cu_tft_1_extension
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+  description: 'UNCONFIRMED: TFT Control Unit #1 extension byte. Value: 0x00. Follows repeating pattern: version, status, extension per device slot.'
+  tbc: true
+- address: '0x10'
+  payload:
+    length: 11
+    type: char
+    class: text
+  topic: bus/devices/control_unit_led/version
+  name: 'LED-ControlUnit: Version'
+  unique_id: dev_cu_led_version
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+      icon: mdi:information-outline
+  description: HW/SW-Version
+- address: '0x11'
+  payload:
+    length: 1
+    type: byte
+  topic: bus/devices/control_unit_led/status
+  expose_ha: false
+  name: LED Control Unit Status
+  unique_id: dev_cu_led_status
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+  description: 'LED Control Unit related. Write-ping address. Value: 0x00 when device not present.'
+- address: '0x12'
+  payload:
+    length: 1
+    type: byte
+  topic: bus/devices/control_unit_led/extension
+  expose_ha: false
+  name: LED Control Unit Extension (unconfirmed)
+  unique_id: dev_cu_led_extension
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+  description: 'UNCONFIRMED: LED Control Unit extension byte. Value: 0x00. Same version/status/extension pattern as other device slots.'
+  tbc: true
+- address: '0x13'
+  payload:
+    length: 11
+    type: char
+    class: text
+  topic: bus/devices/other_device_1/version
+  name: 'Other Device #1: Version'
+  unique_id: dev_1_version
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+      icon: mdi:information-outline
+      enabled_by_default: false
+  description: HW/SW-Version
+- address: '0x14'
+  payload:
+    length: 1
+    type: byte
+  topic: bus/devices/other_device_1/status
+  expose_ha: false
+  name: 'Other Device #1 Status'
+  unique_id: dev_1_status
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+      enabled_by_default: false
+  description: 'Other Device #1 related. Write-ping address. Value: 0x00 when device not present.'
+- address: '0x15'
+  payload:
+    length: 1
+    type: byte
+  topic: bus/devices/other_device_1/extension
+  expose_ha: false
+  name: Other Device
+  unique_id: dev_1_extension
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+  description: 'UNCONFIRMED: Other Device #1 extension byte. Value: 0x00. Same version/status/extension pattern as other device slots.'
+  tbc: true
+- address: '0x16'
+  payload:
+    length: 11
+    type: char
+    class: text
+  topic: bus/devices/other_device_2/version
+  name: 'Other Device #2: Version'
+  unique_id: dev_2_version
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+      icon: mdi:information-outline
+      enabled_by_default: false
+  description: HW/SW-Version
+- address: '0x17'
+  payload:
+    length: 1
+    type: byte
+  topic: bus/devices/other_device_2/status
+  expose_ha: false
+  name: 'Other Device #2 Status'
+  unique_id: dev_2_status
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+      enabled_by_default: false
+  description: 'Other Device #2 related. Write-ping address. Value: 0x00 when device not present.'
+- address: '0x19'
+  payload:
+    length: 11
+    type: char
+    class: text
+  topic: bus/devices/slave/version
+  name: Slave Version
+  unique_id: dev_slave_version
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+      icon: mdi:information-outline
+  description: HW/SW-Version
+- address: '0x1a'
+  payload:
+    length: 1
+    type: byte
+  topic: bus/devices/slave/health_status
+  expose_ha: false
+  name: Slave Health Status
+  unique_id: dev_slave_health
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+  description: 'Slave fan-controller alive/health signal. Observed values: 0 when fans are stopped (error, communication lost, or standby), 13 (0x0d) during normal running. The value 13 is a constant ''alive'' magic number — it does NOT track current fan speed (FS1/2/3 changes do not move this register).'
+- address: '0x1c'
+  payload:
+    length: 11
+    type: char
+    class: text
+  topic: bus/devices/ptc_defroster/version
+  name: PTC-Defroster Version
+  unique_id: dev_ptc_defroster_version
+  operations: RO
+  home_assistant:
+    type: sensor
+    config: {}
+  description: HW/SW-Version
+- address: '0x1d'
+  payload:
+    length: 1
+    type: byte
+  topic: bus/devices/ptc_defroster/health_status
+  expose_ha: false
+  name: PTC Defroster Health Status
+  unique_id: dev_ptc_defroster_health
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+  description: 'PTC Defroster health status. Write-ping address. Value: 0x01-0x03 when active, 0x00 when missing.'
+- address: '0x1f'
+  payload:
+    length: 11
+    type: char
+    class: text
+  topic: bus/devices/other_device_3/version
+  name: 'Other Device #3: Version'
+  unique_id: dev_3_version
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+      icon: mdi:information-outline
+      enabled_by_default: false
+  description: HW/SW-Version
+- address: '0x20'
+  payload:
+    length: 1
+    type: byte
+  topic: bus/devices/other_device_3/status
+  expose_ha: false
+  name: 'Other Device #3 Status'
+  unique_id: dev_3_status
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+      enabled_by_default: false
+  description: 'Other Device #3 status. Write-ping address. Value: 0x00 when device not present.'
+- address: '0x22'
+  payload:
+    length: 11
+    type: char
+    class: text
+  topic: bus/devices/other_device_4/version
+  name: 'Other Device #4: Version'
+  unique_id: dev_4_version
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+      icon: mdi:information-outline
+      enabled_by_default: false
+  description: HW/SW-Version
+- address: '0x23'
+  payload:
+    length: 1
+    type: byte
+  topic: bus/devices/other_device_4/status
+  expose_ha: false
+  name: 'Other Device #4 Status'
+  unique_id: dev_4_status
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+      enabled_by_default: false
+  description: 'Other Device #4 status. Write-ping address. Value: 0x00 when device not present.'
+- address: '0x25'
+  payload:
+    length: 1
+    type: byte
+  topic: bus/system/hardware_config_id
+  expose_ha: false
+  name: Hardware Config ID
+  unique_id: sys_hw_config_id
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+  description: 'Hardware config / device-ID constant. Observed to be 0x36 (54) across all captures (including reboots and standby cycles). Broadcast in every status bundle. Not user-configurable.'
+  suppress_activity: true
+  publish: false
+- address: '0x2c'
+  payload:
+    length: 1
+    type: byte
+  topic: bus/ventilation/active_max_fan_speed
+  expose_ha: false
+  name: Active Max Fan Speed (mirror)
+  unique_id: vent_active_max_speed
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+  description: 'Active maximum fan speed (mirror). Value: 100 matches fan_speed_purge (0x30). Updated when waking from standby.'
+- address: '0x2d'
+  payload:
+    length: 1
+    type: byte
+  topic: bus/ventilation/active_min_fan_speed
+  expose_ha: false
+  name: Active Min Fan Speed (mirror)
+  unique_id: vent_active_min_speed
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+  description: 'Active minimum fan speed (mirror). Value: 17 matches fan_speed_reduced (0x2e). Updated when waking from standby.'
+- address: '0x3e'
+  payload:
+    length: 5
+    type: counter
+    unit_of_measurement: min
+    class: time
+  topic: bus/filter_age/runtime/remaining
+  name: Remaining run-time of the filter
+  unique_id: filter_remaining_runtime
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      val_tpl: '{{ value_json.converted | int }}'
+      dev_cla: duration
+      stat_cla: total_increasing
+      unit_of_meas: min
+      icon: mdi:air-filter
+  description: Current remaining run-time of the filter. The filter run-time is decremented daily.
+- address: '0x40'
+  payload:
+    length: 1
+    type: byte
+  topic: bus/filter_age/type
+  expose_ha: false
+  name: Filter Type (unconfirmed)
+  unique_id: filter_type
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+  description: 'UNCONFIRMED: Filter type index or alert level. Value: 3. In filter register block near 0x3d-0x3f (filter run-time, change interval, warning threshold).'
+  tbc: true
+- address: '0x44'
+  payload:
+    length: 1
+    type: byte
+  topic: bus/system/status_bitmask
+  expose_ha: false
+  name: System Status Bitmask
+  unique_id: sys_status_bitmask
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+  description: 'System status bitmask. Value: 0x5C (01011100). Sent every ~1s alongside temperatures. Write-ping address. Bits may indicate: bypass state, defroster state, fan running, system mode.'
+  suppress_activity: true
+  publish: false
+- address: '0x45'
+  payload:
+    length: 1
+    type: int
+    decimals: 1
+    unit_of_measurement: °C
+    class: temperature
+  topic: bus/sensors/intake_air_limit_temperature
+  expose_ha: false
+  name: Intake Air Limit Temperature (unconfirmed)
+  unique_id: sensors_intake_air_limit
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+      unit_of_meas: °C
+      dev_cla: temperature
+      val_tpl: '{{ value_json.converted | float }}'
+  description: 'UNCONFIRMED: Possibly current intake air limit temperature or derived sensor value. Value: 155 (15.5 C if decimals=1). Manual ref: bypass stays closed below intake air limit temp (factory 13-15 C range). Near bypass/frost protection registers (0x44-0x49).'
+  tbc: true
+- address: '0x46'
+  payload:
+    length: 1
+    type: byte
+  topic: bus/ventilation/fan_duty_cycle_reference
+  expose_ha: false
+  name: Fan Duty Cycle Reference (unconfirmed)
+  unique_id: vent_fan_duty_ref
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+  description: 'UNCONFIRMED: Fan speed reference percentage. Value: 100 (100%). Near bypass/frost protection registers.'
+  tbc: true
+- address: '0x48'
+  payload:
+    length: 1
+    type: int
+    decimals: 1
+    unit_of_measurement: K
+    class: temperature
+  topic: bus/frost_protection/thresholds/supply_air_hysteresis
+  expose_ha: false
+  name: Frost Protection Supply Air Hysteresis (unconfirmed)
+  unique_id: fp_supply_air_hysteresis
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+      unit_of_meas: K
+      dev_cla: temperature
+      val_tpl: '{{ value_json.converted | float }}'
+  description: 'UNCONFIRMED: Frost protection supply air hysteresis. Value: 5 (0.5K if decimals=1). Between Frost Protection Min Intake Air Temp (0x47) and Bypass Closed Below (0x49). Manual ref: anti-freeze protection threshold minimum supply air temperature factory 5.0 C.'
+  tbc: true
+- address: '0x55'
+  payload:
+    length: 2
+    type: int
+    decimals: 1
+    signed: true
+    unit_of_measurement: '%'
+    class: percent
+  topic: bus/ventilation/automatic/sensor/fan_speed
+  name: Fan Speed by External Sensor
+  unique_id: vent_auto_sensor_fan_speed
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      val_tpl: '{{ value_json.converted | float }}'
+      unit_of_meas: '%'
+      icon: mdi:fan
+      expire_after: 300
+  description: Percentage of fan speed according to the sensor output.
+  throttle:
+    min_change: 1.0
+    max_interval: 300
+- address: '0x57'
+  payload:
+    length: 1
+    type: byte
+  topic: bus/ventilation/automatic/sensor/characteristic_max
+  expose_ha: false
+  name: Sensor Characteristic Umax/Imax (unconfirmed)
+  unique_id: vent_auto_sensor_char_max
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+  description: 'UNCONFIRMED: Automatic sensor characteristic curve end value (Umax V or Imax mA). Value: 10. Manual ref: sensor output 0-10V or 4-20mA with parameterizable start/end points for fan speed curve. In sensor output block (0x55-0x59).'
+  tbc: true
+- address: '0x58'
+  payload:
+    length: 1
+    type: byte
+  topic: bus/ventilation/automatic/sensor/characteristic_min
+  expose_ha: false
+  name: Sensor Characteristic Umin/Imin (unconfirmed)
+  unique_id: vent_auto_sensor_char_min
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+  description: 'UNCONFIRMED: Automatic sensor characteristic curve start value (Umin V or Imin mA). Value: 6. Manual ref: lower point (range start p1) of linear fan speed characteristic. In sensor output block (0x55-0x59).'
+  tbc: true
+- address: '0x59'
+  payload:
+    length: 1
+    type: byte
+  topic: bus/ventilation/automatic/sensor/plausibility_threshold
+  expose_ha: false
+  name: Sensor Plausibility Threshold (unconfirmed)
+  unique_id: vent_auto_sensor_plausibility
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+  description: 'UNCONFIRMED: Automatic sensor plausibility or error threshold. Value: 5. Manual ref: current sensor error if 0-3mA for >1s, reset if >3.5mA. In sensor output block (0x55-0x59).'
+  tbc: true
+- address: '0x5b'
+  payload:
+    length: 2
+    type: word
+  topic: bus/ventilation/fan_speed_nominal_mirror
+  expose_ha: false
+  name: Fan Speed Nominal (mirror)
+  unique_id: vent_fan_speed_nominal_mirror
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+  description: 'Fan speed reference (mirror). Value: 0x0032 (50). Matches fan_speed_nominal setting (0x2f=50%). 2-byte register.'
+- address: '0x5c'
+  payload:
+    length: 1
+    type: int
+    decimals: 1
+    unit_of_measurement: K
+    class: temperature
+  topic: bus/post_heating/hysteresis
+  expose_ha: false
+  name: Post-Heating Hysteresis (unconfirmed)
+  unique_id: post_heating_hysteresis
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+      unit_of_meas: K
+      dev_cla: temperature
+      val_tpl: '{{ value_json.converted | float }}'
+  description: 'UNCONFIRMED: Post-heating hysteresis (0.5K if decimals=1). Value: 5. In post-heating settings block near 0x5a-0x5b.'
+  tbc: true
+- address: '0x5d'
+  payload:
+    length: 1
+    type: int
+    decimals: 1
+    unit_of_measurement: °C
+    class: temperature
+  topic: bus/post_heating/duct_temperature_setpoint
+  expose_ha: false
+  name: Post-Heating Duct Temperature Setpoint (unconfirmed)
+  unique_id: post_heating_duct_temp_setpoint
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+      unit_of_meas: °C
+      dev_cla: temperature
+      val_tpl: '{{ value_json.converted | float }}'
+  description: 'UNCONFIRMED: Post-heating duct temperature setpoint. Value: 40 (40 C). Manual ref: Setup submenu Post-heating includes parameterisation of the duct temperature. Near Post Heating Duct Temperature sensor (0x5a).'
+  tbc: true
+- address: '0x5e'
+  payload:
+    length: 1
+    type: byte
+  topic: bus/ground_pipe_diverter_valve/available
+  expose_ha: false
+  name: GHE-Flap Available (unconfirmed)
+  unique_id: ghe_available
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+  description: 'UNCONFIRMED: GHE-flap available/enabled flag. Value: 0x00 (not available). Manual ref: Setup submenu Ground pipe diverter valve - specify whether a flap is available via checkmark. Directly before GHE-flap thresholds (0x5f-0x60).'
+  tbc: true
+- address: '0x61'
+  payload:
+    length: 1
+    type: int
+    decimals: 1
+    unit_of_measurement: K
+    class: temperature
+  topic: bus/ground_pipe_diverter_valve/hysteresis
+  expose_ha: false
+  name: GHE-Flap Hysteresis (unconfirmed)
+  unique_id: ghe_hysteresis
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+      unit_of_meas: K
+      dev_cla: temperature
+      val_tpl: '{{ value_json.converted | float }}'
+  description: 'UNCONFIRMED: GHE-flap switching hysteresis. Value: 5 (0.5K if decimals=1). Between GHE-Flap Upper Threshold (0x60) and Bypass Check (0x62). Mirrors bypass hysteresis pattern (0x43=0.5K).'
+  tbc: true
+- address: '0x62'
+  payload:
+    length: 1
+    type: byte
+  topic: bus/tft/fan_speed_menu_index
+  name: Active Fan-Speed Menu Index
+  unique_id: tft_fan_speed_menu_index
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+  description: 'Observed to track which fan-speed row is currently being edited on the TFT Fan Speeds menu. Values 0x0b/0x0c/0x0d (11/12/13) correlate with writes to FS1 (0x2e) / FS2 (0x2f) / FS3 (0x30) and Imbalance Group 1/2/3 (0x31/0x32/0x33). Previous guess ''Bypass Check'' was wrong — the TFT bypass menu uses 0x1b.'
+  tbc: true
+- address: '0x7c'
+  payload:
+    length: 1
+    type: int
+    decimals: 1
+    unit_of_measurement: °C
+    class: temperature
+  topic: bus/frost_protection/thresholds/min_supply_air_temperature
+  expose_ha: false
+  name: Frost Protection Min Supply Air Temp (unconfirmed)
+  unique_id: fp_min_supply_air_temp
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+      unit_of_meas: °C
+      dev_cla: temperature
+      val_tpl: '{{ value_json.converted | float }}'
+  description: 'UNCONFIRMED: Frost protection minimum supply air temperature threshold. Value: 5 (5.0 C). Manual ref: anti-freeze protection threshold minimum supply air temperature factory 5.0 C. Between Frost Protection Mode (0x7b) and Frost Protection Sensor Ref (0x7d).'
+  tbc: true
+- address: '0x7d'
+  payload:
+    length: 1
+    type: byte
+    class: enum
+    options:
+      '81': Temperature Sensor T2
+      '82': Temperature Sensor T1
+      '83': Temperature Sensor T4
+      '84': Temperature Sensor T3
+  topic: bus/frost_protection/input_sensor_ref
+  expose_ha: false
+  name: Frost Protection Input Sensor Ref
+  unique_id: fp_input_sensor_ref
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+      options:
+      - Temperature Sensor T2
+      - Temperature Sensor T1
+      - Temperature Sensor T4
+      - Temperature Sensor T3
+  description: 'Temperature sensor reference. Value: 0x81 (129) = register address of T2 sensor. Possibly ''which sensor for frost protection input''.'
+- address: '0x7e'
+  payload:
+    length: 1
+    type: byte
+    class: enum
+    options:
+      '81': Temperature Sensor T2
+      '82': Temperature Sensor T1
+      '83': Temperature Sensor T4
+      '84': Temperature Sensor T3
+  topic: bus/frost_protection/output_sensor_ref
+  expose_ha: false
+  name: Frost Protection Output Sensor Ref
+  unique_id: fp_output_sensor_ref
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+      options:
+      - Temperature Sensor T2
+      - Temperature Sensor T1
+      - Temperature Sensor T4
+      - Temperature Sensor T3
+  description: 'Temperature sensor reference. Value: 0x82 (130) = register address of T1 sensor. Possibly ''which sensor for frost protection output''.'
+- address: '0x81'
+  payload:
+    length: 2
+    type: int
+    decimals: 1
+    signed: true
+    unit_of_measurement: °C
+    class: temperature
+  topic: bus/sensors/temperature_t2
+  name: Temperature Sensor T2
+  unique_id: status_sensor_t2
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      val_tpl: '{{ value_json.converted | float }}'
+      dev_cla: temperature
+      stat_cla: measurement
+      sug_dsp_prc: 1
+      unit_of_meas: °C
+      icon: mdi:thermometer
+      expire_after: 300
+  description: 'Version LEFT: Supply air temperature [t_sup]. Version RIGHT: Exhaust air temperature [t_exh]'
+  throttle:
+    min_change: 0.2
+    max_interval: 300
+- address: '0x82'
+  payload:
+    length: 2
+    type: int
+    decimals: 1
+    signed: true
+    unit_of_measurement: °C
+    class: temperature
+  topic: bus/sensors/temperature_t1
+  name: Temperature Sensor T1
+  unique_id: status_sensor_t1
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      val_tpl: '{{ value_json.converted | float }}'
+      dev_cla: temperature
+      stat_cla: measurement
+      sug_dsp_prc: 1
+      unit_of_meas: °C
+      icon: mdi:thermometer
+      expire_after: 300
+  description: 'Version LEFT: Intake air temperature [t_int]. Version RIGHT: Extract air temperature [t_ext]'
+  throttle:
+    min_change: 0.2
+    max_interval: 300
+- address: '0x83'
+  payload:
+    length: 2
+    type: int
+    decimals: 1
+    signed: true
+    unit_of_measurement: °C
+    class: temperature
+  topic: bus/sensors/temperature_t4
+  name: Temperature Sensor T4
+  unique_id: status_sensor_t4
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      val_tpl: '{{ value_json.converted | float }}'
+      dev_cla: temperature
+      stat_cla: measurement
+      sug_dsp_prc: 1
+      unit_of_meas: °C
+      icon: mdi:thermometer
+      expire_after: 300
+  description: 'Version LEFT: Exhaust air [t_exh]. Version RIGHT: Supply air temperature [t_sup]'
+  throttle:
+    min_change: 0.2
+    max_interval: 300
+- address: '0x84'
+  payload:
+    length: 2
+    type: int
+    decimals: 1
+    signed: true
+    unit_of_measurement: °C
+    class: temperature
+  topic: bus/sensors/temperature_t3
+  name: Temperature Sensor T3
+  unique_id: status_sensor_t3
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      val_tpl: '{{ value_json.converted | float }}'
+      dev_cla: temperature
+      stat_cla: measurement
+      sug_dsp_prc: 1
+      unit_of_meas: °C
+      icon: mdi:thermometer
+      expire_after: 300
+  description: 'Version LEFT: Extract air [t_ext].Version RIGHT: Intake air temperature [t_int]'
+  throttle:
+    min_change: 0.2
+    max_interval: 300
+- address: '0x86'
+  payload:
+    length: 1
+    type: byte
+    class: bool
+  topic: bus/system/fan_running
+  expose_ha: false
+  name: Fan Running Flag
+  unique_id: sys_fan_running
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+  description: 'Fan running flag. Value: 1 when fans active, adjacent to fan operating hours (0x85). Possibly counter enable flag.'
+- address: '0x87'
+  payload:
+    length: 1
+    type: byte
+  topic: bus/system/nominal_fan_speed_ref
+  expose_ha: false
+  name: Current Nominal Fan Speed Ref
+  unique_id: sys_nominal_fan_speed_ref
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+  description: 'Current nominal fan speed reference. Value: 50 matches fan_speed_nominal (0x2f=50%). May be the active target speed.'
+- address: '0x88'
+  payload:
+    length: 16
+    type: byte
+    class: code
+  topic: bus/messages/error_n2/code
+  name: 'Error Message #2: Code'
+  unique_id: msg_error_n2_code
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+      icon: mdi:alert-circle-outline
+  description: Code of error message n-2
+- address: '0x89'
+  payload:
+    length: 4
+    type: date
+    class: date
+  topic: bus/messages/error_n2/date
+  name: 'Error Message #2: Date'
+  unique_id: msg_error_n2_date
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+      icon: mdi:alert-circle-outline
+  description: Event date of error message n-2
+- address: '0x8a'
+  payload:
+    length: 3
+    type: time
+    class: time
+  topic: bus/messages/error_n2/time
+  name: 'Error Message #2: Time'
+  unique_id: msg_error_n2_time
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+      icon: mdi:alert-circle-outline
+  description: Event time of error message n-2
+- address: '0x8b'
+  payload:
+    length: 16
+    type: byte
+    class: code
+  topic: bus/messages/error_n3/code
+  name: 'Error Message #3: Code'
+  unique_id: msg_error_n3_code
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+      icon: mdi:alert-circle-outline
+  description: Code of error message n-3
+- address: '0x8c'
+  payload:
+    length: 4
+    type: date
+    class: date
+  topic: bus/messages/error_n3/date
+  name: 'Error Message #3: Date'
+  unique_id: msg_error_n3_date
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+      icon: mdi:alert-circle-outline
+  description: Event date of error message n-3
+- address: '0x8d'
+  payload:
+    length: 3
+    type: time
+    class: time
+  topic: bus/messages/error_n3/time
+  name: 'Error Message #3: Time'
+  unique_id: msg_error_n3_time
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+      icon: mdi:alert-circle-outline
+  description: Event time of error message n-3
+- address: '0x8e'
+  payload:
+    length: 1
+    type: byte
+  topic: bus/messages/error_count
+  expose_ha: false
+  name: Error Count or Active Flag (unconfirmed)
+  unique_id: msg_error_count
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+  description: 'UNCONFIRMED: Error count or active error flag. Value: 0x00. Directly after error message #3 block (0x8b-0x8d).'
+  tbc: true
+- address: '0x8f'
+  payload:
+    length: 11
+    type: char
+    class: text
+  topic: bus/devices/control_unit_tft_2/version
+  name: 'TFT-ControlUnit#2: Version'
+  unique_id: dev_cu_tft_2_version
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+      icon: mdi:information-outline
+      enabled_by_default: false
+  description: HW/SW-Version
+- address: '0x90'
+  payload:
+    length: 1
+    type: byte
+  topic: bus/devices/control_unit_tft_2/extension
+  expose_ha: false
+  name: TFT Control Unit
+  unique_id: dev_cu_tft_2_extension
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+  description: 'UNCONFIRMED: TFT Control Unit #2 extension byte. Same version/status/extension pattern as other device slots. After TFT#2 Version (0x8f).'
+  tbc: true
+- address: '0x91'
+  payload:
+    length: 1
+    type: byte
+  topic: bus/devices/control_unit_tft_2/status
+  expose_ha: false
+  name: TFT Control Unit
+  unique_id: dev_cu_tft_2_status
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+  description: 'UNCONFIRMED: TFT Control Unit #2 status. Value: 0x00 when not present. Same device slot pattern as TFT#1 (0x0e).'
+  tbc: true
+- address: '0x92'
+  payload:
+    length: 11
+    type: char
+    class: text
+  topic: bus/devices/control_unit_tft_3/version
+  name: 'TFT-ControlUnit#3: Version'
+  unique_id: dev_cu_tft_3_version
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+      icon: mdi:information-outline
+      enabled_by_default: false
+  description: HW/SW-Version
+- address: '0x93'
+  payload:
+    length: 1
+    type: byte
+  topic: bus/devices/control_unit_tft_3/extension
+  expose_ha: false
+  name: TFT Control Unit
+  unique_id: dev_cu_tft_3_extension
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+  description: 'UNCONFIRMED: TFT Control Unit #3 extension byte. Same version/status/extension pattern. After TFT#3 Version (0x92).'
+  tbc: true
+- address: '0x94'
+  payload:
+    length: 1
+    type: byte
+  topic: bus/devices/control_unit_tft_3/status
+  expose_ha: false
+  name: TFT Control Unit
+  unique_id: dev_cu_tft_3_status
+  operations: RO
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+  description: 'UNCONFIRMED: TFT Control Unit #3 status. Value: 0x00 when not present. Same device slot pattern as TFT#1 (0x0e).'
+  tbc: true
+controls:
+- address: '0x01'
+  payload:
+    length: 4
+    type: date
+    class: date
+  topic: bus/system/date
+  name: Date
+  unique_id: sys_date
+  operations: RW
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+      enabled_by_default: false
+  description: Date
+  throttle:
+    max_interval: 300
+- address: '0x02'
+  payload:
+    length: 3
+    type: time
+    class: time
+  topic: bus/system/time
+  name: Time
+  unique_id: sys_time
+  operations: RW
+  home_assistant:
+    type: sensor
+    config:
+      entity_category: diagnostic
+      enabled_by_default: false
+  description: Time
+  throttle:
+    max_interval: 300
+    min_interval: 60
+- address: '0x05'
+  payload:
+    length: 2
+    type: word
+    options:
+      '0100': Voltage
+      '0500': Current
+    class: enum
+  topic: bus/ventilation/automatic/sensor/output
+  name: Sensor Output
+  unique_id: vent_auto_sensor_output
+  operations: RW
+  home_assistant:
+    type: select
+    config:
+      options:
+      - Voltage
+      - Current
+      icon: mdi:air-filter
+      entity_category: config
+  description: 'Sensor has a 4.0..20.0mA current output or a 0.0..10.0V voltage output.Settings: Voltage, CurrentFactory setting: Voltage'
+- address: '0x06'
+  payload:
+    length: 1
+    type: byte
+    options:
+      '00': German
+      '01': English
+      '02': French
+      '03': Dutch
+      '04': Polish
+      '05': Swedish
+      '06': Slovenian
+      '07': Slovakian
+      '08': Italian
+      '09': Latvian
+      '0a': Spanish
+      '0b': Czech
+    class: enum
+  topic: bus/system/language
+  name: Language
+  unique_id: sys_language
+  operations: RW
+  home_assistant:
+    type: select
+    config:
+      entity_category: config
+      options:
+      - German
+      - English
+      - French
+      - Dutch
+      - Polish
+      - Swedish
+      - Slovenian
+      - Slovakian
+      - Italian
+      - Latvian
+      - Spanish
+      - Czech
+      icon: mdi:translate
+  description: 'Language for the TFT touch panel(s).Settings: German, English, French, Dutch, Polish, Swedish, Slovenian, Slovakian, Italian, Latvian, Spanish, CzechFactory setting: German'
+- address: '0x07'
+  payload:
+    length: 1
+    type: byte
+    options:
+      '00': Standby
+      '01': Running
+    class: enum
+  topic: bus/system/state
+  name: System State
+  unique_id: sys_state
+  operations: RW
+  home_assistant:
+    type: select
+    config:
+      options:
+      - Standby
+      - Running
+      icon: mdi:power
+      expire_after: 300
+  description: 'System State.Settings: Running, Standby'
+- address: '0x18'
+  payload:
+    length: 1
+    type: byte
+    options:
+      '00': Unavailable
+      '73': Inactive
+      'f3': Active
+    class: enum
+  topic: bus/ventilation/summer/mode
+  name: Ventilation Summer Mode
+  unique_id: vent_summer_ventilation_mode
+  operations: RW
+  home_assistant:
+    type: select
+    config:
+      options:
+      - Unavailable
+      - Inactive
+      - Active
+      icon: mdi:air-filter
+      entity_category: config
+      expire_after: 300
+  description: 'Summer ventilation status for devices without by-pass flap.Settings: inactive, active'
+- address: '0x1b'
+  payload:
+    length: 2
+    type: word
+    options:
+      '7300': Unavailable
+      '7700': Inactive
+      '7f00': Active
+    class: enum
+  topic: bus/bypass/mode
+  name: Bypass Mode
+  unique_id: bypass_mode
+  operations: RW
+  home_assistant:
+    type: select
+    config:
+      options:
+      - Unavailable
+      - Inactive
+      - Active
+      entity_category: config
+      expire_after: 300
+  description: 'By-pass mode.Settings: Unavailable, Inactive, ActiveFactory settings: Active'
+- address: '0x1e'
+  payload:
+    length: 1
+    type: byte
+    options:
+      '10': Unavailable
+      '0c': Inactive
+      '1c': Active
+    class: enum
+  topic: bus/defroster/brine_defroster/mode
+  name: Brine Defroster Mode
+  unique_id: defroster_brine_mode
+  operations: RW
+  home_assistant:
+    type: select
+    config:
+      options:
+      - Unavailable
+      - Inactive
+      - Active
+      entity_category: config
+      expire_after: 300
+  description: 'Brine Defroster ModeSettings: Unavailable, Inactive, ActiveFactory setting: Active'
+- address: '0x21'
+  payload:
+    length: 1
+    type: byte
+    options:
+      '00': Unavailable
+      '04': Inactive
+      '0c': Active
+    class: enum
+  topic: bus/post_heating/mode
+  name: Post Heating Mode
+  unique_id: post_heating_mode
+  operations: RW
+  home_assistant:
+    type: select
+    config:
+      options:
+      - Unavailable
+      - Inactive
+      - Active
+      icon: mdi:radiator
+      entity_category: config
+  description: 'Post Heating ModeSettings: Unavailable, Inactive, ActiveFactory setting: Unavailable'
+- address: '0x24'
+  payload:
+    length: 1
+    type: byte
+    options:
+      '00': Unavailable
+      '04': Inactive
+      '0c': Active
+    class: enum
+  topic: bus/ground_pipe_diverter_valve/mode
+  name: GHE-Flap Mode
+  unique_id: ghe_mode
+  operations: RW
+  home_assistant:
+    type: select
+    config:
+      options:
+      - Unavailable
+      - Inactive
+      - Active
+      entity_category: config
+  description: 'Geothermal Heat Exchnger Flap Mode.Setting: Unavailable, Inactive, ActiveFactory setting: Unavailable'
+- address: '0x26'
+  payload:
+    length: 5
+    type: counter
+    unit_of_measurement: min
+    class: time
+  topic: bus/system/operating_hours/total
+  name: Total operating hours
+  unique_id: sys_op_hours_total
+  operations: RW
+  home_assistant:
+    type: sensor
+    config:
+      val_tpl: '{{ value_json.converted | int }}'
+      dev_cla: duration
+      stat_cla: total_increasing
+      unit_of_meas: min
+      icon: mdi:clock-outline
+      entity_category: diagnostic
+  description: Overall operating hours (time during which the device is connected to the power supply)
+  throttle:
+    max_interval: 300
+- address: '0x27'
+  payload:
+    length: 1
+    type: byte
+    options:
+      '01': Preset 1
+      '02': Preset 2
+      '03': Preset 3
+      '04': Boost
+      '05': Abwesend
+      '06': Auto
+      '07': Level 1
+      '08': Level 2
+      '09': Level 3
+      '0a': Level 4
+      '0b': Level 5
+      '0c': Level 6
+      '0d': Level 7
+    class: enum
+  topic: bus/ventilation/selection/active
+  name: Ventilation Active Level or Preset
+  unique_id: vent_selection_active
+  operations: RW
+  home_assistant:
+    type: select
+    config:
+      options:
+      - Preset 1
+      - Preset 2
+      - Preset 3
+      - Boost
+      - Abwesend
+      - Auto
+      - Level 1
+      - Level 2
+      - Level 3
+      - Level 4
+      - Level 5
+      - Level 6
+      - Level 7
+      icon: mdi:air-filter
+      expire_after: 300
+- address: '0x28'
+  payload:
+    length: 1
+    type: byte
+    options:
+      '01': Preset 1
+      '02': Preset 2
+      '03': Preset 3
+      '04': Boost
+      '05': Abwesend
+      '06': Auto
+      '07': Level 1
+      '08': Level 2
+      '09': Level 3
+      '0a': Level 4
+      '0b': Level 5
+      '0c': Level 6
+      '0d': Level 7
+    class: enum
+  topic: bus/ventilation/selection
+  name: Ventilation Selected Level or Preset
+  unique_id: vent_selection
+  operations: RW
+  home_assistant:
+    type: select
+    config:
+      options:
+      - Preset 1
+      - Preset 2
+      - Preset 3
+      - Boost
+      - Abwesend
+      - Auto
+      - Level 1
+      - Level 2
+      - Level 3
+      - Level 4
+      - Level 5
+      - Level 6
+      - Level 7
+      icon: mdi:air-filter
+      expire_after: 300
+- address: '0x29'
+  payload:
+    length: 1
+    type: byte
+    options:
+      '01': Preset 1
+      '02': Preset 2
+      '03': Preset 3
+      '05': Abwesend
+      '06': Auto
+      '07': Level 1
+      '08': Level 2
+      '09': Level 3
+      '0a': Level 4
+      '0b': Level 5
+      '0c': Level 6
+      '0d': Level 7
+    class: enum
+  topic: bus/ventilation/selection/fallback
+  name: Ventilation Fallback Level or Preset
+  unique_id: vent_selection_fallback
+  operations: RW
+  home_assistant:
+    type: select
+    config:
+      options:
+      - Preset 1
+      - Preset 2
+      - Preset 3
+      - Abwesend
+      - Auto
+      - Level 1
+      - Level 2
+      - Level 3
+      - Level 4
+      - Level 5
+      - Level 6
+      - Level 7
+      icon: mdi:air-filter
+      entity_category: config
+      expire_after: 300
+- address: '0x2a'
+  payload:
+    length: 1
+    type: byte
+    options:
+      '00': Supply and Extract
+      '01': Extract
+      '02': Supply
+    class: enum
+  topic: bus/ventilation/selection/operating_mode
+  name: Ventilation Operating Mode
+  unique_id: vent_selection_op_mode
+  operations: RW
+  home_assistant:
+    type: select
+    config:
+      options:
+      - Supply and Extract
+      - Extract
+      - Supply
+      icon: mdi:air-filter
+      entity_category: config
+      expire_after: 300
+- address: '0x2b'
+  payload:
+    length: 1
+    type: byte
+    options:
+      '00': Supply and Extract
+      '01': Extract
+      '02': Supply
+    class: enum
+  topic: bus/ventilation/selection/operating_mode/fallback
+  name: Ventilation Operating Mode Fallback
+  unique_id: vent_selection_op_mode_fallback
+  operations: RW
+  home_assistant:
+    type: select
+    config:
+      options:
+      - Supply and Extract
+      - Extract
+      - Supply
+      icon: mdi:air-filter
+      entity_category: config
+- address: '0x2e'
+  payload:
+    length: 1
+    type: int
+    decimals: 0
+    signed: false
+    unit_of_measurement: '%'
+    min: 17
+    max: 100
+    step: 1
+    class: percent
+  topic: bus/ventilation/fan_speed_reduced
+  name: Fan Speed Reduced
+  unique_id: vent_fan_speed_reduced
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      min: 17
+      max: 100
+      step: 1
+      unit_of_meas: '%'
+      mode: box
+      icon: mdi:fan
+      entity_category: config
+  description: 'Percentage adjustments of the reduced fan speed (FS1 on LCD control unit).Setting logic: 17 % < FS1 < FS2Setting range: 17..100% in 1%-stepsFactory setting: 20%'
+- address: '0x2f'
+  payload:
+    length: 1
+    type: int
+    decimals: 0
+    signed: false
+    unit_of_measurement: '%'
+    min: 17
+    max: 100
+    step: 1
+    class: percent
+  topic: bus/ventilation/fan_speed_nominal
+  name: Fan Speed Nominal
+  unique_id: vent_fan_speed_nominal
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      min: 17
+      max: 100
+      step: 1
+      unit_of_meas: '%'
+      mode: box
+      icon: mdi:fan
+      entity_category: config
+  description: 'Percentage adjustments of the nominal fan speed (FS2 on LCD control unit).Setting logic: FS1 < FS2 < FS3Setting range: 17..100% in 1%-stepsFactory setting: 50%'
+- address: '0x30'
+  payload:
+    length: 1
+    type: int
+    decimals: 0
+    signed: false
+    unit_of_measurement: '%'
+    min: 17
+    max: 100
+    step: 1
+    class: percent
+  topic: bus/ventilation/fan_speed_purge
+  name: Fan Speed Purge
+  unique_id: vent_fan_speed_purge
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      min: 17
+      max: 100
+      step: 1
+      unit_of_meas: '%'
+      mode: box
+      icon: mdi:fan
+      entity_category: config
+  description: 'Percentage adjustments of the purge fan speed 3 (FS3 on LCD control unit).Setting logic: FS2 < FS3 < 100 %Setting range: 17..100% in 1%-stepsFactory setting: 80%'
+- address: '0x31'
+  payload:
+    length: 1
+    type: int
+    decimals: 0
+    signed: true
+    unit_of_measurement: '%'
+    min: -50
+    max: 50
+    step: 1
+    class: percent
+  topic: bus/ventilation/imbalance_1
+  name: Ventilation Imbalance Group 1
+  unique_id: vent_imbalance_group_1
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      min: -50
+      max: 50
+      step: 1
+      unit_of_meas: '%'
+      mode: box
+      icon: mdi:air-filter
+      entity_category: config
+  description: 'Imbalance between supply and extract air fans. Fan Speed 1+2+reduced.Setting range: -50..50% in 1%-stepsFactory setting: 9%'
+- address: '0x32'
+  payload:
+    length: 1
+    type: int
+    decimals: 0
+    signed: true
+    unit_of_measurement: '%'
+    min: -50
+    max: 50
+    step: 1
+    class: percent
+  topic: bus/ventilation/imbalance_2
+  name: Ventilation Imbalance Group 2
+  unique_id: vent_imbalance_group_2
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      min: -50
+      max: 50
+      step: 1
+      unit_of_meas: '%'
+      mode: box
+      icon: mdi:air-filter
+      entity_category: config
+  description: 'Imbalance between supply and extract air fans. Fan Speed 3+4+5+norminal.Setting range: -50..50% in 1%-stepsFactory setting: 15%'
+- address: '0x33'
+  payload:
+    length: 1
+    type: int
+    decimals: 0
+    signed: true
+    unit_of_measurement: '%'
+    min: -50
+    max: 50
+    step: 1
+    class: percent
+  topic: bus/ventilation/imblanace_3
+  name: Ventilation Imbalance Group 3
+  unique_id: vent_imbalance_group_3
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      min: -50
+      max: 50
+      step: 1
+      unit_of_meas: '%'
+      mode: box
+      icon: mdi:air-filter
+      entity_category: config
+  description: 'Imbalance between supply and extract air fans. Fan Speed 6+7+purge.Setting range: -50..50% in 1%-stepsFactory setting: 17%'
+- address: '0x34'
+  payload:
+    length: 1
+    type: int
+    decimals: 0
+    signed: false
+    unit_of_measurement: '%'
+    min: 0
+    max: 100
+    step: 1
+    class: percent
+  topic: bus/ventilation/fan_speed_1
+  name: Fan Speed 1
+  unique_id: vent_fan_speed_1
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      min: 0
+      max: 100
+      step: 1
+      unit_of_meas: '%'
+      mode: box
+      icon: mdi:fan
+      entity_category: config
+  description: 'Percentage adjustments of fan speed 1 (FS1) for LED Control Unit.Setting range: 0..100% in 1%-stepsFactory setting: 17%'
+- address: '0x35'
+  payload:
+    length: 1
+    type: int
+    decimals: 0
+    signed: false
+    unit_of_measurement: '%'
+    min: 0
+    max: 100
+    step: 1
+    class: percent
+  topic: bus/ventilation/fan_speed_2
+  name: Fan Speed 2
+  unique_id: vent_fan_speed_2
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      min: 0
+      max: 100
+      step: 1
+      unit_of_meas: '%'
+      mode: box
+      icon: mdi:fan
+      entity_category: config
+  description: 'Percentage adjustments of fan speed 2 (FS2) for LED Control Unit.Setting range: 0..100% in 1%-stepsFactory setting: 29%'
+- address: '0x36'
+  payload:
+    length: 1
+    type: int
+    decimals: 0
+    signed: false
+    unit_of_measurement: '%'
+    min: 0
+    max: 100
+    step: 1
+    class: percent
+  topic: bus/ventilation/fan_speed_3
+  name: Fan Speed 3
+  unique_id: vent_fan_speed_3
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      min: 0
+      max: 100
+      step: 1
+      unit_of_meas: '%'
+      mode: box
+      icon: mdi:fan
+      entity_category: config
+  description: 'Percentage adjustments of fan speed 3 (FS3) for LED Control Unit.Setting range: 0..100% in 1%-stepsFactory setting: 41%'
+- address: '0x37'
+  payload:
+    length: 1
+    type: int
+    decimals: 0
+    signed: false
+    unit_of_measurement: '%'
+    min: 0
+    max: 100
+    step: 1
+    class: percent
+  topic: bus/ventilation/fan_speed_4
+  name: Fan Speed 4
+  unique_id: vent_fan_speed_4
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      min: 0
+      max: 100
+      step: 1
+      unit_of_meas: '%'
+      mode: box
+      icon: mdi:fan
+      entity_category: config
+  description: 'Percentage adjustments of fan speed 4 (FS4) for LED Control Unit.Setting range: 0..100% in 1%-stepsFactory setting: 53%'
+- address: '0x38'
+  payload:
+    length: 1
+    type: int
+    decimals: 0
+    signed: false
+    unit_of_measurement: '%'
+    min: 0
+    max: 100
+    step: 1
+    class: percent
+  topic: bus/ventilation/fan_speed_5
+  name: Fan Speed 5
+  unique_id: vent_fan_speed_5
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      min: 0
+      max: 100
+      step: 1
+      unit_of_meas: '%'
+      mode: box
+      icon: mdi:fan
+      entity_category: config
+  description: 'Percentage adjustments of fan speed 5 (FS5) for LED Control Unit.Setting range: 0..100% in 1%-stepsFactory setting: 65%'
+- address: '0x39'
+  payload:
+    length: 1
+    type: int
+    decimals: 0
+    signed: false
+    unit_of_measurement: '%'
+    min: 0
+    max: 100
+    step: 1
+    class: percent
+  topic: bus/ventilation/fan_speed_6
+  name: Fan Speed 6
+  unique_id: vent_fan_speed_6
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      min: 0
+      max: 100
+      step: 1
+      unit_of_meas: '%'
+      mode: box
+      icon: mdi:fan
+      entity_category: config
+  description: 'Percentage adjustments of fan speed 6 (FS6) for LED Control Unit.Setting range: 0..100% in 1%-stepsFactory setting: 74%'
+- address: '0x3a'
+  payload:
+    length: 1
+    type: int
+    decimals: 0
+    signed: false
+    unit_of_measurement: '%'
+    min: 0
+    max: 100
+    step: 1
+    class: percent
+  topic: bus/ventilation/fan_speed_7
+  name: Fan Speed 7
+  unique_id: vent_fan_speed_7
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      min: 0
+      max: 100
+      step: 1
+      unit_of_meas: '%'
+      mode: box
+      icon: mdi:fan
+      entity_category: config
+  description: 'Percentage adjustments of fan speed 7 (FS7) for LED Control Unit.Setting range: 0..100% in 1%-stepsFactory setting: 100%'
+- address: '0x3b'
+  payload:
+    length: 1
+    type: int
+    decimals: 0
+    signed: false
+    unit_of_measurement: min
+    min: 15
+    max: 120
+    step: 5
+    class: time
+  topic: bus/ventilation/boost_duration
+  name: Boost Ventilation Duration
+  unique_id: vent_boost_duration
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      min: 15
+      max: 120
+      step: 5
+      unit_of_meas: min
+      mode: box
+      icon: mdi:air-filter
+      entity_category: config
+  description: 'Time for boost ventilation, whereby the air volume flow of the boost ventilation corresponds to FS3.Setting range: 15..120min in 5min-stepsFactory setting: 15min'
+- address: '0x3c'
+  payload:
+    length: 1
+    type: int
+    decimals: 0
+    signed: false
+    unit_of_measurement: min/h
+    min: 15
+    max: 45
+    step: 15
+    class: time_rate
+  topic: bus/ventilation/unoccupied/intensity
+  name: Ventilation Intensity during Non-Occupation
+  unique_id: vent_unoccupied_intensity
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      min: 15
+      max: 45
+      step: 15
+      unit_of_meas: min/h
+      mode: box
+      icon: mdi:air-filter
+      entity_category: config
+  description: 'Ventilation intensity for the duration of non-occupation for humidity protection, whereby the ventilation intensity of the active duration of the time interval corresponds to FS1.Setting range: 15..45min/h in 15min/h-stepsFactory setting: 15min/h'
+- address: '0x3d'
+  payload:
+    length: 5
+    type: counter
+    unit_of_measurement: min
+    class: time
+  topic: bus/filter_age/runtime
+  name: Filter Run-time
+  unique_id: filter_runtime
+  operations: RW
+  home_assistant:
+    type: sensor
+    config:
+      val_tpl: '{{ value_json.converted | int }}'
+      dev_cla: duration
+      stat_cla: total_increasing
+      unit_of_meas: min
+      icon: mdi:air-filter
+      entity_category: config
+  description: 'Duration of the filter run-time, whereby a maximum filter run-time of 90 days is recommended.Setting: 30 days..180 days in 10-day-stepsFactory setting: 90 days'
+- address: '0x3f'
+  payload:
+    length: 5
+    type: counter
+    unit_of_measurement: min
+    class: time
+  topic: bus/filter_age/runtime/warning
+  name: Remaining run-time warning threshold
+  unique_id: filter_remaining_warning
+  operations: RW
+  home_assistant:
+    type: sensor
+    config:
+      val_tpl: '{{ value_json.converted | int }}'
+      dev_cla: duration
+      stat_cla: total_increasing
+      unit_of_meas: min
+      icon: mdi:air-filter
+      entity_category: config
+  description: 'Threshold for remaining run-time of the filter.Factory setting: 10 days'
+- address: '0x41'
+  payload:
+    length: 2
+    type: int
+    decimals: 1
+    signed: true
+    unit_of_measurement: °C
+    min: 20
+    max: 30
+    step: 0.5
+    class: temperature
+  topic: bus/bypass/thresholds/upper_threshold
+  name: Bypass Upper Threshold
+  unique_id: bypass_upper_threshold
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      val_tpl: '{{ value_json.converted | float }}'
+      min: 20
+      max: 30
+      step: 0.5
+      unit_of_meas: °C
+      mode: box
+      entity_category: config
+  description: 'By-pass high/upper threshold for maximum extract air temperature [t_ext_max].Setting range: 20.0..30.0°C in 0.5°C-stepsFactory setting: 25,0°C'
+- address: '0x42'
+  payload:
+    length: 2
+    type: int
+    decimals: 1
+    signed: true
+    unit_of_measurement: °C
+    min: 13
+    max: 19.5
+    step: 0.5
+    class: temperature
+  topic: bus/bypass/thresholds/lower_threshold
+  name: Bypass Lower Threshold
+  unique_id: bypass_lower_threshold
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      val_tpl: '{{ value_json.converted | float }}'
+      min: 13
+      max: 19.5
+      step: 0.5
+      unit_of_meas: °C
+      mode: box
+      entity_category: config
+  description: 'By-pass lower threshold for minimum extract air temperature [t_ext_min].Setting range: 13.0..19.5°C in 0.5°C-stepsFactory setting: 18,0°C'
+- address: '0x43'
+  payload:
+    length: 1
+    type: int
+    decimals: 1
+    signed: false
+    unit_of_measurement: K
+    min: 0.5
+    max: 18
+    step: 0.5
+    class: temperature
+  topic: bus/bypass/thresholds/hysteresis
+  name: Bypass Hysteresis
+  unique_id: bypass_hysteresis
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      val_tpl: '{{ value_json.converted | float }}'
+      min: 0.5
+      max: 18
+      step: 0.5
+      unit_of_meas: K
+      mode: box
+      entity_category: config
+  description: 'By-pass hysteresis [H_ext].Setting range: 0.5..18.0K in 0.5K-stepsFactory setting: 0.5K'
+- address: '0x47'
+  payload:
+    length: 2
+    type: int
+    decimals: 1
+    signed: true
+    unit_of_measurement: °C
+    class: temperature
+  topic: bus/frost_protection/thresholds/min_intake_air_temperature
+  name: Frost Protection Minimum Intake Air Temperature
+  unique_id: fp_min_intake_air_temp
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      val_tpl: '{{ value_json.converted | float }}'
+      step: 1
+      unit_of_meas: °C
+      mode: box
+      entity_category: config
+      min: -20
+      max: 10
+  description: 'Anti-freeze protection threshold minimum supply air temperature [t_int_min].Factory setting: 5.0 °C'
+- address: '0x49'
+  payload:
+    length: 2
+    type: int
+    decimals: 1
+    signed: true
+    unit_of_measurement: °C
+    min: 12
+    max: 20
+    step: 0.5
+    class: temperature
+  topic: bus/bypass/thresholds/closed_below
+  name: Bypass Closed Below
+  unique_id: bypass_closed_below
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      val_tpl: '{{ value_json.converted | float }}'
+      min: 12
+      max: 20
+      step: 0.5
+      unit_of_meas: °C
+      mode: box
+      entity_category: config
+  description: 'By-pass closed below.Setting range: 12.0..20.0°C in 0.5°C-stepsFactory setting: 13.0°C'
+- address: '0x4a'
+  payload:
+    length: 2
+    type: int
+    decimals: 1
+    signed: true
+    unit_of_measurement: °C
+    class: temperature
+  topic: bus/frost_protection/thresholds/safe
+  name: Frost Protection Safe Threshold
+  unique_id: fp_safe
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      val_tpl: '{{ value_json.converted | float }}'
+      step: 1
+      unit_of_meas: °C
+      mode: box
+      entity_category: config
+      min: -20
+      max: 10
+  description: 'Anti-freeze protection threshold intake air safe.Factory setting: 0.0°C'
+- address: '0x4b'
+  payload:
+    length: 2
+    type: int
+    decimals: 1
+    signed: true
+    unit_of_measurement: °C
+    class: temperature
+  topic: bus/frost_protection/thresholds/eco
+  name: Frost Protection Eco Threshold
+  unique_id: fp_eco
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      val_tpl: '{{ value_json.converted | float }}'
+      step: 1
+      unit_of_meas: °C
+      mode: box
+      entity_category: config
+      min: -20
+      max: 10
+  description: 'Anti-freeze protection threshold intake air eco.Factory setting: -2.0 °C'
+- address: '0x4c'
+  payload:
+    length: 2
+    type: int
+    decimals: 1
+    signed: true
+    unit_of_measurement: °C
+    class: temperature
+  topic: bus/frost_protection/thresholds/moisture_heat_exchanger
+  name: Frost Protection Moisture Heat Exchanger Threshold
+  unique_id: fp_moisture_he
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      val_tpl: '{{ value_json.converted | float }}'
+      step: 1
+      unit_of_meas: °C
+      mode: box
+      entity_category: config
+      min: -20
+      max: 10
+  description: 'Anti-freeze protection threshold intake air moisture heat exchanger.Factory setting: -8.0 °C'
+- address: '0x4d'
+  payload:
+    length: 1
+    type: int
+    decimals: 1
+    signed: false
+    unit_of_measurement: V
+    class: voltage
+  topic: bus/ventilation/automatic/sensor/voltage/u_min
+  name: Sensor Output Voltage Parameter U_min
+  unique_id: vent_auto_sensor_voltage_u_min
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      val_tpl: '{{ value_json.converted | float }}'
+      step: 1
+      unit_of_meas: V
+      mode: box
+      icon: mdi:air-filter
+      entity_category: config
+      min: 0.0
+      max: 10.0
+  description: 'Voltage lower point (range start parameter p1) for a linear characteristic curve [U_min] for the fan speed.Setting range: 0..10VFactory setting: 8.0V'
+- address: '0x4e'
+  payload:
+    length: 1
+    type: int
+    decimals: 0
+    signed: false
+    unit_of_measurement: '%'
+    class: percent
+  topic: bus/ventilation/automatic/sensor/voltage/n_min
+  name: Sensor Output Voltage Parameter n_min
+  unique_id: vent_auto_sensor_voltage_n_min
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      step: 1
+      unit_of_meas: '%'
+      mode: box
+      icon: mdi:air-filter
+      entity_category: config
+      min: 17
+      max: 100
+  description: 'Fan speed percentage lower point (range start parameter p1) for a linear characteristic curve [n_min] for the fan speed.Setting range: 17% to 100%Factory setting: 17%'
+- address: '0x4f'
+  payload:
+    length: 1
+    type: int
+    decimals: 1
+    signed: false
+    unit_of_measurement: V
+    class: voltage
+  topic: bus/ventilation/automatic/sensor/voltage/u_max
+  name: Sensor Output Voltage Parameter U_max
+  unique_id: vent_auto_sensor_voltage_u_max
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      val_tpl: '{{ value_json.converted | float }}'
+      step: 1
+      unit_of_meas: V
+      mode: box
+      icon: mdi:air-filter
+      entity_category: config
+      min: 0.0
+      max: 10.0
+  description: 'Voltage upper point (range stop parameter p2) for a linear characteristic curve [U_max] for the fan speed.Setting range: 0..10VFactory setting: 1.7V'
+- address: '0x50'
+  payload:
+    length: 1
+    type: int
+    decimals: 0
+    signed: false
+    unit_of_measurement: '%'
+    class: percent
+  topic: bus/ventilation/automatic/sensor/voltage/n_max
+  name: Sensor Output Voltage Parameter n_max
+  unique_id: vent_auto_sensor_voltage_n_max
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      step: 1
+      unit_of_meas: '%'
+      mode: box
+      icon: mdi:air-filter
+      entity_category: config
+      min: 17
+      max: 100
+  description: 'Fan speed percentage upper point (range stop parameter p2) for a linear characteristic curve [n_max] for the fan speed.Setting range: 17% to 100%Factory setting: 80%'
+- address: '0x51'
+  payload:
+    length: 1
+    type: int
+    decimals: 1
+    signed: false
+    unit_of_measurement: mA
+    class: current
+  topic: bus/ventilation/automatic/sensor/current/i_min
+  name: Sensor Output Current Parameter I_min
+  unique_id: vent_auto_sensor_current_i_min
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      val_tpl: '{{ value_json.converted | float }}'
+      step: 1
+      unit_of_meas: mA
+      mode: box
+      icon: mdi:air-filter
+      entity_category: config
+      min: 0.0
+      max: 20.0
+  description: 'Current lower point (range start parameter p1) for a linear characteristic curve [I_min] for the fan speed.Setting range: 4.0..20.0mAFactory setting: 5.0mA'
+- address: '0x52'
+  payload:
+    length: 1
+    type: int
+    decimals: 0
+    signed: false
+    unit_of_measurement: '%'
+    class: percent
+  topic: bus/ventilation/automatic/sensor/current/n_min
+  name: Sensor Output Current Parameter n_min
+  unique_id: vent_auto_sensor_current_n_min
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      step: 1
+      unit_of_meas: '%'
+      mode: box
+      icon: mdi:air-filter
+      entity_category: config
+      min: 17
+      max: 100
+  description: 'Fan speed percentage lower point (range start parameter p1) for a linear characteristic curve [n_min] for the fan speed.Setting range: 17% to 100%Factory setting: 20%'
+- address: '0x53'
+  payload:
+    length: 1
+    type: int
+    decimals: 1
+    signed: false
+    unit_of_measurement: mA
+    class: current
+  topic: bus/ventilation/automatic/sensor/current/i_max
+  name: Sensor Output Current Parameter I_max
+  unique_id: vent_auto_sensor_current_i_max
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      val_tpl: '{{ value_json.converted | float }}'
+      step: 1
+      unit_of_meas: mA
+      mode: box
+      icon: mdi:air-filter
+      entity_category: config
+      min: 0.0
+      max: 20.0
+  description: 'Current upper point (range stop parameter p2) for a linear characteristic curve [I_max] for the fan speed.Setting range: 4.0..20.0mAFactory setting: 19.0mA'
+- address: '0x54'
+  payload:
+    length: 1
+    type: int
+    decimals: 0
+    signed: false
+    unit_of_measurement: '%'
+    class: percent
+  topic: bus/ventilation/automatic/sensor/current/n_max
+  name: Sensor Output Current Parameter n_max
+  unique_id: vent_auto_sensor_current_n_max
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      step: 1
+      unit_of_meas: '%'
+      mode: box
+      icon: mdi:air-filter
+      entity_category: config
+      min: 17
+      max: 100
+  description: 'Fan speed percentage upper point (range stop parameter p2) for a linear characteristic curve [n_max] for the fan speed.Setting range: 17% to 100%Factory setting: 80%'
+- address: '0x56'
+  payload:
+    length: 2
+    type: int
+    decimals: 1
+    signed: true
+    unit_of_measurement: °C
+    min: 15
+    max: 30
+    class: temperature
+  topic: bus/defroster/brine_defroster/cooling_threshold
+  name: Brine Defroster Cooling Threshold
+  unique_id: defroster_brine_cooling_temp
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      val_tpl: '{{ value_json.converted | float }}'
+      min: 15
+      max: 30
+      step: 1
+      unit_of_meas: °C
+      mode: box
+      entity_category: config
+  description: 'Threshold temperature brine defroster [t_bde]. If the outside temperature is above the set threshold value, the brine defroster is activated for cooling the intake air (cooling function).Setting range: 15.0..30.0°CFactory setting: 22.0°C'
+- address: '0x5a'
+  payload:
+    length: 2
+    type: int
+    decimals: 1
+    signed: true
+    unit_of_measurement: °C
+    min: 15
+    max: 60
+    step: 0.5
+    class: temperature
+  topic: bus/post_heating/duct_temperature
+  name: Post Heating Duct Temperature
+  unique_id: post_heating_duct_temp
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      val_tpl: '{{ value_json.converted | float }}'
+      min: 15
+      max: 60
+      step: 0.5
+      unit_of_meas: °C
+      mode: box
+      entity_category: config
+  description: 'Parameterisation of the duct temperature of the post-heating (supplementary heating battery).Setting range: 15.0°C..60.0°C in 0.5°C stepsFactory setting: 50.0°C'
+- address: '0x5f'
+  payload:
+    length: 2
+    type: int
+    decimals: 1
+    signed: true
+    unit_of_measurement: °C
+    min: -10
+    max: 14.5
+    step: 0.5
+    class: temperature
+  topic: bus/ground_pipe_diverter_valve/min_outside_temperature
+  name: GHE-Flap Lower Threshold
+  unique_id: ghe_min_outside_temp
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      val_tpl: '{{ value_json.converted | float }}'
+      min: -10
+      max: 14.5
+      step: 0.5
+      unit_of_meas: °C
+      mode: box
+      entity_category: config
+  description: 'Lower threshold for minimum outside temperature [t_out_min]. If the intake temperature is below the set threshold value, the flap of the Geothermal Heat Exchanger opens the intake air duct for heating the intake air (frost protection function).Setting range: -10.0..14.5°CFactory setting: 5.0°C'
+- address: '0x60'
+  payload:
+    length: 2
+    type: int
+    decimals: 1
+    signed: true
+    unit_of_measurement: °C
+    min: 15
+    max: 30
+    step: 0.5
+    class: temperature
+  topic: bus/ground_pipe_diverter_valve/max_outside_temperature
+  name: GHE-Flap Upper Threshold
+  unique_id: ghe_max_outside_temp
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      val_tpl: '{{ value_json.converted | float }}'
+      min: 15
+      max: 30
+      step: 0.5
+      unit_of_meas: °C
+      mode: box
+      entity_category: config
+  description: 'Upper threshold for maximum outside temperature [t_out_max]. If the intake temperature is above the set threshold value, the flap of the Geothermal Heat Exchanger opens the intake air duct for cooling the intake air (cooling function).Setting range: 15.0..30.0°CFactory setting: 22.0°C'
+- address: '0x63'
+  payload:
+    length: 2
+    type: word
+    options:
+      'e001': Automatic Timing
+      'e801': Automatic Sensor
+      'ec01': Joint Operation Mode with Fire Place
+      'e000': Automatic Timing
+    class: enum
+  topic: bus/ventilation/automatic/mode
+  name: Automatic Mode
+  unique_id: vent_auto_mode
+  operations: RW
+  home_assistant:
+    type: select
+    config:
+      options:
+      - Automatic Sensor
+      - Joint Operation Mode with Fire Place
+      - Automatic Timing
+      icon: mdi:air-filter
+      entity_category: config
+  description: 'Operating Mode in Automatic Mode.Settings: Automatic Sensor, Joint Operation Mode with Fire Place, Automatic TimingFactory setting: Automatic Timing'
+- address: '0x64'
+  payload:
+    length: 8
+    type: byte
+    class: bitwise
+  topic: bus/ventilation/automatic/time_program/0_00000800
+  name: Time Program Monday 00:00-08:00
+  unique_id: vent_auto_time_0_1
+  operations: RW
+  home_assistant:
+    type: sensor
+    config:
+      icon: mdi:air-filter
+      entity_category: config
+  description: Time Program Monday 00:00-08:00
+- address: '0x65'
+  payload:
+    length: 8
+    type: byte
+    class: bitwise
+  topic: bus/ventilation/automatic/time_program/0_08001600
+  name: Time Program Monday 08:00-16:00
+  unique_id: vent_auto_time_0_2
+  operations: RW
+  home_assistant:
+    type: sensor
+    config:
+      icon: mdi:air-filter
+      entity_category: config
+  description: Time Program Monday 08:00-16:00
+- address: '0x66'
+  payload:
+    length: 8
+    type: byte
+    class: bitwise
+  topic: bus/ventilation/automatic/time_program/0_16002300
+  name: Time Program Monday 16:00-23:00
+  unique_id: vent_auto_time_0_3
+  operations: RW
+  home_assistant:
+    type: sensor
+    config:
+      icon: mdi:air-filter
+      entity_category: config
+  description: Time Program Monday 16:00-23:00
+- address: '0x67'
+  payload:
+    length: 8
+    type: byte
+    class: bitwise
+  topic: bus/ventilation/automatic/time_program/1_00000800
+  name: Time Program Tuesday 00:00-08:00
+  unique_id: vent_auto_time_1_1
+  operations: RW
+  home_assistant:
+    type: sensor
+    config:
+      icon: mdi:air-filter
+      entity_category: config
+  description: Time Program Tuesday 00:00-08:00
+- address: '0x68'
+  payload:
+    length: 8
+    type: byte
+    class: bitwise
+  topic: bus/ventilation/automatic/time_program/1_08001600
+  name: Time Program Tuesday 08:00-16:00
+  unique_id: vent_auto_time_1_2
+  operations: RW
+  home_assistant:
+    type: sensor
+    config:
+      icon: mdi:air-filter
+      entity_category: config
+  description: Time Program Tuesday 08:00-16:00
+- address: '0x69'
+  payload:
+    length: 8
+    type: byte
+    class: bitwise
+  topic: bus/ventilation/automatic/time_program/1_16002300
+  name: Time Program Tuesday 16:00-23:00
+  unique_id: vent_auto_time_1_3
+  operations: RW
+  home_assistant:
+    type: sensor
+    config:
+      icon: mdi:air-filter
+      entity_category: config
+  description: Time Program Tuesday 16:00-23:00
+- address: '0x6a'
+  payload:
+    length: 8
+    type: byte
+    class: bitwise
+  topic: bus/ventilation/automatic/time_program/2_00000800
+  name: Time Program Wednesday 00:00-08:00
+  unique_id: vent_auto_time_2_1
+  operations: RW
+  home_assistant:
+    type: sensor
+    config:
+      icon: mdi:air-filter
+      entity_category: config
+  description: Time Program Wednesday 00:00-08:00
+- address: '0x6b'
+  payload:
+    length: 8
+    type: byte
+    class: bitwise
+  topic: bus/ventilation/automatic/time_program/2_08001600
+  name: Time Program Wednesday 08:00-16:00
+  unique_id: vent_auto_time_2_2
+  operations: RW
+  home_assistant:
+    type: sensor
+    config:
+      icon: mdi:air-filter
+      entity_category: config
+  description: Time Program Wednesday 08:00-16:00
+- address: '0x6c'
+  payload:
+    length: 8
+    type: byte
+    class: bitwise
+  topic: bus/ventilation/automatic/time_program/2_16002300
+  name: Time Program Wednesday 16:00-23:00
+  unique_id: vent_auto_time_2_3
+  operations: RW
+  home_assistant:
+    type: sensor
+    config:
+      icon: mdi:air-filter
+      entity_category: config
+  description: Time Program Wednesday 16:00-23:00
+- address: '0x6d'
+  payload:
+    length: 8
+    type: byte
+    class: bitwise
+  topic: bus/ventilation/automatic/time_program/3_00000800
+  name: Time Program Thursday 00:00-08:00
+  unique_id: vent_auto_time_3_1
+  operations: RW
+  home_assistant:
+    type: sensor
+    config:
+      icon: mdi:air-filter
+      entity_category: config
+  description: Time Program Thursday 00:00-08:00
+- address: '0x6e'
+  payload:
+    length: 8
+    type: byte
+    class: bitwise
+  topic: bus/ventilation/automatic/time_program/3_08001600
+  name: Time Program Thursday 08:00-16:00
+  unique_id: vent_auto_time_3_2
+  operations: RW
+  home_assistant:
+    type: sensor
+    config:
+      icon: mdi:air-filter
+      entity_category: config
+  description: Time Program Thursday 08:00-16:00
+- address: '0x6f'
+  payload:
+    length: 8
+    type: byte
+    class: bitwise
+  topic: bus/ventilation/automatic/time_program/3_16002300
+  name: Time Program Thursday 16:00-23:00
+  unique_id: vent_auto_time_3_3
+  operations: RW
+  home_assistant:
+    type: sensor
+    config:
+      icon: mdi:air-filter
+      entity_category: config
+  description: Time Program Thursday 16:00-23:00
+- address: '0x70'
+  payload:
+    length: 8
+    type: byte
+    class: bitwise
+  topic: bus/ventilation/automatic/time_program/4_00000800
+  name: Time Program Friday 00:00-08:00
+  unique_id: vent_auto_time_4_1
+  operations: RW
+  home_assistant:
+    type: sensor
+    config:
+      icon: mdi:air-filter
+      entity_category: config
+  description: Time Program Friday 00:00-08:00
+- address: '0x71'
+  payload:
+    length: 8
+    type: byte
+    class: bitwise
+  topic: bus/ventilation/automatic/time_program/4_08001600
+  name: Time Program Friday 08:00-16:00
+  unique_id: vent_auto_time_4_2
+  operations: RW
+  home_assistant:
+    type: sensor
+    config:
+      icon: mdi:air-filter
+      entity_category: config
+  description: Time Program Friday 08:00-16:00
+- address: '0x72'
+  payload:
+    length: 8
+    type: byte
+    class: bitwise
+  topic: bus/ventilation/automatic/time_program/4_16002300
+  name: Time Program Friday 16:00-23:00
+  unique_id: vent_auto_time_4_3
+  operations: RW
+  home_assistant:
+    type: sensor
+    config:
+      icon: mdi:air-filter
+      entity_category: config
+  description: Time Program Friday 16:00-23:00
+- address: '0x73'
+  payload:
+    length: 8
+    type: byte
+    class: bitwise
+  topic: bus/ventilation/automatic/time_program/5_00000800
+  name: Time Program Saturday 00:00-08:00
+  unique_id: vent_auto_time_5_1
+  operations: RW
+  home_assistant:
+    type: sensor
+    config:
+      icon: mdi:air-filter
+      entity_category: config
+  description: Time Program Saturday 00:00-08:00
+- address: '0x74'
+  payload:
+    length: 8
+    type: byte
+    class: bitwise
+  topic: bus/ventilation/automatic/time_program/5_08001600
+  name: Time Program Saturday 08:00-16:00
+  unique_id: vent_auto_time_5_2
+  operations: RW
+  home_assistant:
+    type: sensor
+    config:
+      icon: mdi:air-filter
+      entity_category: config
+  description: Time Program Saturday 08:00-16:00
+- address: '0x75'
+  payload:
+    length: 8
+    type: byte
+    class: bitwise
+  topic: bus/ventilation/automatic/time_program/5_16002300
+  name: Time Program Saturday 16:00-23:00
+  unique_id: vent_auto_time_5_3
+  operations: RW
+  home_assistant:
+    type: sensor
+    config:
+      icon: mdi:air-filter
+      entity_category: config
+  description: Time Program Saturday 16:00-23:00
+- address: '0x76'
+  payload:
+    length: 8
+    type: byte
+    class: bitwise
+  topic: bus/ventilation/automatic/time_program/6_00000800
+  name: Time Program Sunday 00:00-08:00
+  unique_id: vent_auto_time_6_1
+  operations: RW
+  home_assistant:
+    type: sensor
+    config:
+      icon: mdi:air-filter
+      entity_category: config
+  description: Time Program Sunday 00:00-08:00
+- address: '0x77'
+  payload:
+    length: 8
+    type: byte
+    class: bitwise
+  topic: bus/ventilation/automatic/time_program/6_08001600
+  name: Time Program Sunday 08:00-16:00
+  unique_id: vent_auto_time_6_2
+  operations: RW
+  home_assistant:
+    type: sensor
+    config:
+      icon: mdi:air-filter
+      entity_category: config
+  description: Time Program Sunday 08:00-16:00
+- address: '0x78'
+  payload:
+    length: 8
+    type: byte
+    class: bitwise
+  topic: bus/ventilation/automatic/time_program/6_16002300
+  name: Time Program Sunday 16:00-23:00
+  unique_id: vent_auto_time_6_3
+  operations: RW
+  home_assistant:
+    type: sensor
+    config:
+      icon: mdi:air-filter
+      entity_category: config
+  description: Time Program Sunday 16:00-23:00
+- address: '0x79'
+  payload:
+    length: 1
+    type: int
+    decimals: 0
+    signed: false
+    unit_of_measurement: '%'
+    min: 0
+    max: 95
+    step: 5
+    class: percent
+  topic: bus/screen_dimming/degree
+  name: Degree of Screen Dimming
+  unique_id: screen_dim_degree
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      entity_category: config
+      min: 0
+      max: 95
+      step: 5
+      unit_of_meas: '%'
+      mode: box
+  description: 'Degree of dimming relating to the basic brightness when the screen is active.Setting range: 5..95% in 5%-stepsFactory setting: 75%'
+- address: '0x7a'
+  payload:
+    length: 1
+    type: int
+    decimals: 0
+    signed: false
+    unit_of_measurement: min
+    min: 1
+    max: 10
+    step: 1
+    class: time
+  topic: bus/screen_dimming/duration
+  name: Duration until Screen Dimming
+  unique_id: screen_dim_duration
+  operations: RW
+  home_assistant:
+    type: number
+    config:
+      entity_category: config
+      min: 1
+      max: 10
+      step: 1
+      unit_of_meas: min
+      mode: box
+  description: 'Duration until dimming after last operation of the TFT control unit.Setting range: 1..10min in 1min-stepsFactory setting: 1min'
+- address: '0x7b'
+  payload:
+    length: 1
+    type: byte
+    options:
+      '00': Eco
+      '01': Safe
+      '02': Moisture Heat Exchanger
+    class: enum
+  topic: bus/frost_protection/mode
+  name: Frost Protection Mode
+  unique_id: fp_mode
+  operations: RW
+  home_assistant:
+    type: select
+    config:
+      options:
+      - Eco
+      - Safe
+      - Moisture Heat Exchanger
+      entity_category: config
+  description: 'Frost protection mode with own anti-freeze protection threshold.Settings: Eco, Safe, Moisture Heat ExchangerFactory setting: Safe'
+- address: '0x7f'
+  payload:
+    length: 1
+    type: byte
+    options:
+      '00': None
+      '01': Electro Defroster
+      '02': PTC Defroster
+      '03': Brine Defroster
+    class: enum
+  topic: bus/frost_protection/type
+  name: Defroster Type
+  unique_id: fp_defroster_type
+  operations: RW
+  home_assistant:
+    type: select
+    config:
+      options:
+      - None
+      - Electro Defroster
+      - PTC Defroster
+      - Brine Defroster
+      entity_category: config
+  description: 'Defroster TypeSetting: None, PTC Defroster, Brine DefrosterFactory Setting: PTC Defroster'
+- address: '0x80'
+  payload:
+    length: 1
+    type: byte
+    options:
+      '00': None
+      '01': Electric Heater Battery
+      '03': Hot Water Heater Battery
+    class: enum
+  topic: bus/post_heating/type
+  name: Post Heating Type
+  unique_id: post_heating_type
+  operations: RW
+  home_assistant:
+    type: select
+    config:
+      options:
+      - None
+      - Electric Heater Battery
+      - Hot Water Heater Battery
+      icon: mdi:radiator
+      entity_category: config
+  description: 'Optionally available supplementary heating battery module.Settings: None, Electric Heater Battery, Hot Water Heater BatteryFactory setting: None'
+- address: '0x85'
+  payload:
+    length: 5
+    type: counter
+    unit_of_measurement: min
+    class: time
+  topic: bus/system/operating_hours/fans
+  name: Fan operating hours
+  unique_id: sys_op_hours_fans
+  operations: RW
+  home_assistant:
+    type: sensor
+    config:
+      val_tpl: '{{ value_json.converted | int }}'
+      dev_cla: duration
+      stat_cla: total_increasing
+      unit_of_meas: min
+      icon: mdi:clock-outline
+      entity_category: diagnostic
+  description: Operating hours of the fans (time during which the fans are operating)

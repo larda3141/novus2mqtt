@@ -1,0 +1,18 @@
+# Paul Novus 300/450 — unit-specific configuration.
+#
+# This file holds information about YOUR specific unit. It's the only file
+# a user normally needs to edit. The register/protocol map lives alongside
+# in `registers.yaml` and is not meant to be changed.
+#
+# For the bus protocol itself (command codes, frame format, quirks) see
+# `BACKGROUND.md`.
+
+device:
+  name: Paul Novus 300
+  manufacturer: Paul Novus
+  model: NOVUS300
+  variant: left          # "left" or "right" — affects T1-T4 sensor mapping
+  hw_version: L-VER-DEF
+  sw_version: 1.7.1
+  serial_number: 000741929834
+  suggested_area: Technical Room

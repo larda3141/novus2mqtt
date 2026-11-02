@@ -1,0 +1,28 @@
+# Environment
+.env
+.env.local
+
+# Rust build output
+/target
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs and bus dumps
+*.log
+
+# Backups
+*.bak
+
+# Claude Code — commit shared config (CLAUDE.md, .claude/skills, settings.json,
+# commands, agents, hooks) but keep personal overrides out of the repo.
+.claude/settings.local.json
+.claude/*.local.json
+CLAUDE.local.md
