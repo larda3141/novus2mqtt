@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project uses Calendar Versioning (`YYYY.M.D`).
 
+## [2026.11.4] - 2026-11-04
+
+### Added
+- **systemd watchdog** (`Type=notify`, `WatchdogSec=`): readiness is signalled
+  after initialisation, and the main loop feeds the watchdog only while the MQTT
+  event loop shows activity (or a broker outage is within the 6m30s grace
+  period). A frozen event loop, a stuck main loop or a broker that never
+  answers now ends in a restart instead of a silent stall. No-op outside systemd.
+
+### Fixed
+- **Serial read can no longer park the main loop**: reads are bounded to 1 s, so
+  MQTT commands, diagnostics and the watchdog keep running while the bus is silent.
+- **MQTT event loop never blocks on the command channel**: incoming messages use
+  `try_send`; if the queue is full the message is dropped with a warning instead
+  of stopping `poll()` (and with it keep-alives, which let the broker drop us).
+
+### Security
+- `rumqttc` 0.25 without default features (TLS was never implemented), removing
+  rustls/rustls-webpki advisories; `cargo update` for crossbeam-epoch, anyhow,
+  tokio and spin advisories.
+
 ## [Unreleased] - 2026-04-16
 
 ### Added

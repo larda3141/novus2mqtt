@@ -330,12 +330,14 @@ For production use, run novus2mqtt as a system service that starts on boot and r
    Wants=network-online.target
 
    [Service]
-   Type=simple
+   Type=notify
+   NotifyAccess=main
+   WatchdogSec=60
    User=pi
    Group=dialout
    EnvironmentFile=/etc/novus2mqtt/.env
    ExecStart=/usr/local/bin/novus2mqtt --novus-config /etc/novus2mqtt/device.yaml
-   Restart=on-failure
+   Restart=always
    RestartSec=10
 
    # Hardening
@@ -348,6 +350,14 @@ For production use, run novus2mqtt as a system service that starts on boot and r
    WantedBy=multi-user.target
    EOF
    ```
+
+   With `Type=notify` the unit only counts as started once the bridge has
+   connected and published discovery. `WatchdogSec=60` makes systemd restart
+   the bridge if it stops reporting healthy: the main loop pings every 20 s,
+   but only while the MQTT event loop shows activity (or a broker outage is
+   still inside the 6m30s grace period after which the bridge exits itself).
+   Keep `ACTIVITY_LOG=false` under systemd, or the per-register lines rotate
+   the connect/disconnect history out of the journal within hours.
 
 4. Enable and start:
    ```bash

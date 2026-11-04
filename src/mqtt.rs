@@ -31,6 +31,16 @@ pub struct MqttClient {
     resolved_subs: Arc<Mutex<Vec<ResolvedSub>>>,
     /// Epoch seconds when MQTT disconnected (0 = connected or never disconnected)
     disconnected_since: Arc<AtomicU64>,
+    /// Epoch seconds of the last event returned by the event loop (any packet,
+    /// incoming or outgoing). Stops advancing if the event loop stalls.
+    last_activity: Arc<AtomicU64>,
+}
+
+fn epoch_secs() -> u64 {
+    std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs()
 }
 
 impl MqttClient {
@@ -78,6 +88,7 @@ impl MqttClient {
 
         let (tx, rx) = mpsc::channel::<IncomingMessage>(256);
         let disconnected_since = Arc::new(AtomicU64::new(0));
+        let last_activity = Arc::new(AtomicU64::new(epoch_secs()));
 
         let mqtt_client = MqttClient {
             client: client.clone(),
@@ -86,6 +97,7 @@ impl MqttClient {
             shutting_down: shutting_down.clone(),
             resolved_subs: resolved_subs.clone(),
             disconnected_since: disconnected_since.clone(),
+            last_activity: last_activity.clone(),
         };
 
         // Spawn the event loop task
@@ -97,11 +109,13 @@ impl MqttClient {
             client,
             resolved_subs,
             disconnected_since,
+            last_activity,
         ));
 
         Ok((mqtt_client, rx))
     }
 
+    #[allow(clippy::too_many_arguments)]
     async fn run_event_loop(
         mut event_loop: EventLoop,
         connected: Arc<AtomicBool>,
@@ -110,13 +124,19 @@ impl MqttClient {
         client: AsyncClient,
         resolved_subs: Arc<Mutex<Vec<ResolvedSub>>>,
         disconnected_since: Arc<AtomicU64>,
+        last_activity: Arc<AtomicU64>,
     ) {
         loop {
             if shutting_down.load(Ordering::SeqCst) {
                 break;
             }
 
-            match event_loop.poll().await {
+            let event = event_loop.poll().await;
+            if event.is_ok() {
+                last_activity.store(epoch_secs(), Ordering::SeqCst);
+            }
+
+            match event {
                 Ok(Event::Incoming(Packet::ConnAck(_))) => {
                     info!("MQTT: connected to broker");
                     connected.store(true, Ordering::SeqCst);
@@ -137,8 +157,17 @@ impl MqttClient {
                         topic: publish.topic.clone(),
                         payload: publish.payload.to_vec(),
                     };
-                    if tx.send(msg).await.is_err() {
-                        debug!("MQTT: incoming message channel closed");
+                    // Never block the event loop on the command channel: if the
+                    // main loop stops draining it, an awaiting send would stop
+                    // poll() too, so keep-alives stop and the broker drops us.
+                    match tx.try_send(msg) {
+                        Ok(()) => {}
+                        Err(mpsc::error::TrySendError::Full(msg)) => {
+                            warn!(topic = %msg.topic, "MQTT: command queue full, dropping message");
+                        }
+                        Err(mpsc::error::TrySendError::Closed(_)) => {
+                            debug!("MQTT: incoming message channel closed");
+                        }
                     }
                 }
                 Ok(Event::Incoming(Packet::Disconnect)) => {
@@ -187,6 +216,12 @@ impl MqttClient {
             .unwrap_or_default()
             .as_secs();
         now.saturating_sub(since)
+    }
+
+    /// Seconds since the event loop last returned an event. With a 30 s
+    /// keep-alive this stays well under a minute while the loop is running.
+    pub fn secs_since_activity(&self) -> u64 {
+        epoch_secs().saturating_sub(self.last_activity.load(Ordering::SeqCst))
     }
 
     /// Get a clone of the underlying async client for fire-and-forget publishing.

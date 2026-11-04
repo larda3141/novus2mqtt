@@ -78,6 +78,9 @@ pub struct NovusConnector {
     pub(super) last_memory_check_ts: Instant,
     pub(super) last_diagnostics_ts: Instant,
     pub(super) last_time_sync_ts: Instant,
+    /// Ping interval for the systemd watchdog (None when not run with WatchdogSec=).
+    watchdog_interval: Option<Duration>,
+    last_watchdog_ts: Instant,
     pub(super) last_bus_message_ts: Instant,
     pub(super) boot_time: String,
     pub(super) registers_seen: std::collections::HashSet<String>,
@@ -168,6 +171,8 @@ impl NovusConnector {
             last_memory_check_ts: Instant::now(),
             last_diagnostics_ts: Instant::now(),
             last_time_sync_ts: Instant::now(),
+            watchdog_interval: None,
+            last_watchdog_ts: Instant::now(),
             last_bus_message_ts: Instant::now(),
             boot_time,
             registers_seen: std::collections::HashSet::new(),
@@ -310,6 +315,17 @@ impl NovusConnector {
         }
 
         info!("Application: initialization complete");
+
+        // systemd (Type=notify): signal readiness and arm the watchdog. Both
+        // are no-ops when not started by systemd.
+        let _ = sd_notify::notify(&[sd_notify::NotifyState::Ready]);
+        self.watchdog_interval = sd_notify::watchdog_enabled().map(|timeout| timeout / 3);
+        if let Some(interval) = self.watchdog_interval {
+            info!(
+                interval_secs = interval.as_secs(),
+                "Application: systemd watchdog enabled"
+            );
+        }
         Ok(true)
     }
 
@@ -393,6 +409,7 @@ impl NovusConnector {
             self.publish_diagnostics_if_due().await;
             self.sync_time_if_due().await;
             self.check_memory_guard();
+            self.watchdog_ping_if_due();
 
             tokio::time::sleep(Duration::from_millis(10)).await;
         }
@@ -996,6 +1013,41 @@ impl NovusConnector {
     /// Sync the Novus clock from system local time every hour.
     /// Publishes to MQTT command topics, which flow back through the normal
     /// command handler → encode → bus write path.
+    /// Feed the systemd watchdog, but only while the bridge is healthy.
+    ///
+    /// Pinging from the main loop means a stalled main loop starves the
+    /// watchdog. MQTT counts as healthy when its event loop showed activity in
+    /// the last 2 minutes (keep-alive is 30 s), or during a disconnect that is
+    /// still within the 6m30s grace period the main loop enforces itself.
+    /// Anything else (a frozen event loop, or never connecting at all) stops
+    /// the pings and systemd restarts the service.
+    fn watchdog_ping_if_due(&mut self) {
+        let Some(interval) = self.watchdog_interval else {
+            return;
+        };
+        let now = Instant::now();
+        if now.duration_since(self.last_watchdog_ts) < interval {
+            return;
+        }
+        self.last_watchdog_ts = now;
+
+        let Some(ref mqtt) = self.mqtt_client else {
+            return;
+        };
+        let idle = mqtt.secs_since_activity();
+        let disconnected = mqtt.disconnected_secs();
+        let healthy = idle < 120 || (disconnected > 0 && disconnected < 420);
+        if healthy {
+            let _ = sd_notify::notify(&[sd_notify::NotifyState::Watchdog]);
+        } else {
+            error!(
+                mqtt_idle_secs = idle,
+                mqtt_connected = mqtt.is_connected(),
+                "Application: MQTT event loop unresponsive, withholding watchdog ping"
+            );
+        }
+    }
+
     async fn sync_time_if_due(&mut self) {
         if !self.config.auto_sync_time {
             return;

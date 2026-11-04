@@ -10,6 +10,9 @@ use crate::protocol::{
     MSG_MAX_SIZE, MSG_TIMEOUT_SECS,
 };
 
+/// Upper bound for a single serial read in the main loop.
+const READ_TIMEOUT: std::time::Duration = std::time::Duration::from_secs(1);
+
 /// Parser state machine states.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum BusParserState {
@@ -243,7 +246,14 @@ impl SerialHandler {
         };
 
         let mut buf = [0u8; 128];
-        match serial.read(&mut buf).await {
+        // Bounded wait: a silent bus (unit off, adapter unplugged) must not
+        // park the main loop, which also drains MQTT commands and feeds the
+        // systemd watchdog.
+        let read = match tokio::time::timeout(READ_TIMEOUT, serial.read(&mut buf)).await {
+            Ok(result) => result,
+            Err(_) => return Vec::new(),
+        };
+        match read {
             Ok(0) => Vec::new(),
             Ok(n) => {
                 let data = &buf[..n];
