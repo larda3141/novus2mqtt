@@ -16,3 +16,11 @@ device:
   sw_version: 1.7.1
   serial_number: 000741929834
   suggested_area: Technical Room
+  # This unit's probes don't follow the manufacturer's left-hand table
+  # (T3 extract, T4 exhaust): recorder history shows T3 tracks the outdoor
+  # temperature and T4 the room temperature (checked 2026-10-24 and 2026-11-14).
+  temperature_sensors:
+    t1: intake
+    t2: supply
+    t3: exhaust
+    t4: extract

@@ -85,6 +85,21 @@ pub struct DeviceInfo {
     pub configuration_url: Option<String>,
     /// Construction variant: "left" or "right". Determines temperature sensor mapping.
     pub variant: Option<String>,
+    /// Per-unit override of the T1–T4 probe roles, for units whose probes don't
+    /// follow the manufacturer's variant table. Keys `t1`..`t4`, values
+    /// `intake` | `supply` | `extract` | `exhaust`; all four keys, each role once.
+    pub temperature_sensors: Option<HashMap<String, String>>,
+}
+
+/// Air-flow role of a T1–T4 temperature probe: display name and MQTT topic.
+fn temperature_role(role: &str) -> Option<(&'static str, &'static str)> {
+    match role {
+        "intake" => Some(("Intake Air Temperature", "bus/sensors/intake_air")),
+        "supply" => Some(("Supply Air Temperature", "bus/sensors/supply_air")),
+        "extract" => Some(("Extract Air Temperature", "bus/sensors/extract_air")),
+        "exhaust" => Some(("Exhaust Air Temperature", "bus/sensors/exhaust_air")),
+        _ => None,
+    }
 }
 
 /// Register map file — loaded from `registers.yaml` alongside `device.yaml`.
@@ -237,7 +252,7 @@ impl DeviceConfig {
 
         let mut config = Self { yaml };
         config.validate_child_devices()?;
-        config.apply_variant_variant();
+        config.apply_variant_variant()?;
         Ok(config)
     }
 
@@ -294,71 +309,66 @@ impl DeviceConfig {
         format!("{}_{}", self.device_identifier(), child.id)
     }
 
-    /// Apply temperature sensor name/topic overrides based on the variant variant (left/right).
+    /// Roles of the probes T1..T4, in that order: the per-unit
+    /// `temperature_sensors` override if set, otherwise the manufacturer table
+    /// for the variant (left/right).
     /// LEFT:  T1=Intake, T2=Supply, T3=Extract, T4=Exhaust
     /// RIGHT: T1=Extract, T2=Exhaust, T3=Intake, T4=Supply
-    fn apply_variant_variant(&mut self) {
-        let is_right = self
-            .yaml
-            .device
+    fn temperature_roles(&self) -> Result<[String; 4]> {
+        let d = &self.yaml.device;
+        if let Some(ref map) = d.temperature_sensors {
+            for (key, role) in map {
+                if !matches!(key.as_str(), "t1" | "t2" | "t3" | "t4") {
+                    anyhow::bail!("temperature_sensors: unknown probe '{key}' (use t1..t4)");
+                }
+                if temperature_role(role).is_none() {
+                    anyhow::bail!(
+                        "temperature_sensors: {key} has unknown role '{role}' \
+                         (use intake, supply, extract or exhaust)"
+                    );
+                }
+            }
+            let roles = ["t1", "t2", "t3", "t4"].map(|k| map.get(k).cloned().unwrap_or_default());
+            if roles.iter().any(|r| r.is_empty()) {
+                anyhow::bail!("temperature_sensors must set all of t1, t2, t3 and t4");
+            }
+            let unique: std::collections::HashSet<_> = roles.iter().collect();
+            if unique.len() != 4 {
+                anyhow::bail!("temperature_sensors must use each role exactly once");
+            }
+            return Ok(roles);
+        }
+        let is_right = d
             .variant
             .as_deref()
             .map(|c| c.eq_ignore_ascii_case("right"))
             .unwrap_or(false);
-
-        let mapping: &[(&str, &str, &str)] = if is_right {
-            &[
-                (
-                    "status_sensor_t1",
-                    "Extract Air Temperature",
-                    "bus/sensors/extract_air",
-                ),
-                (
-                    "status_sensor_t2",
-                    "Exhaust Air Temperature",
-                    "bus/sensors/exhaust_air",
-                ),
-                (
-                    "status_sensor_t3",
-                    "Intake Air Temperature",
-                    "bus/sensors/intake_air",
-                ),
-                (
-                    "status_sensor_t4",
-                    "Supply Air Temperature",
-                    "bus/sensors/supply_air",
-                ),
-            ]
+        let roles = if is_right {
+            ["extract", "exhaust", "intake", "supply"]
         } else {
-            // LEFT (default)
-            &[
-                (
-                    "status_sensor_t1",
-                    "Intake Air Temperature",
-                    "bus/sensors/intake_air",
-                ),
-                (
-                    "status_sensor_t2",
-                    "Supply Air Temperature",
-                    "bus/sensors/supply_air",
-                ),
-                (
-                    "status_sensor_t3",
-                    "Extract Air Temperature",
-                    "bus/sensors/extract_air",
-                ),
-                (
-                    "status_sensor_t4",
-                    "Exhaust Air Temperature",
-                    "bus/sensors/exhaust_air",
-                ),
-            ]
+            ["intake", "supply", "extract", "exhaust"]
         };
+        Ok(roles.map(String::from))
+    }
+
+    /// Apply temperature sensor name/topic overrides from the probe roles.
+    /// The unique IDs (`status_sensor_t1`..`t4`) never change.
+    fn apply_variant_variant(&mut self) -> Result<()> {
+        let roles = self.temperature_roles()?;
+        let mapping: Vec<(String, &str, &str)> = roles
+            .iter()
+            .enumerate()
+            .map(|(i, role)| {
+                // Safety: roles are validated (override) or constants (variant table).
+                let (name, topic) = temperature_role(role).expect("validated role");
+                (format!("status_sensor_t{}", i + 1), name, topic)
+            })
+            .collect();
 
         for section in [&mut self.yaml.sensors, &mut self.yaml.controls] {
             for entity in section.iter_mut().flatten() {
                 let uid = entity.unique_id.as_deref().unwrap_or("");
-                for &(target_uid, name, topic) in mapping {
+                for (target_uid, name, topic) in &mapping {
                     if uid == target_uid {
                         entity.name = Some(name.to_string());
                         entity.topic = Some(topic.to_string());
@@ -366,6 +376,7 @@ impl DeviceConfig {
                 }
             }
         }
+        Ok(())
     }
 
     /// Get all entities (sensors + controls + binary_sensors) as a flat list.
@@ -587,6 +598,49 @@ mod tests {
         assert!(config_with(vec![child("a", "A", &[""], &[])])
             .validate_child_devices()
             .is_err());
+    }
+
+    fn config_with_device(extra: &str) -> DeviceConfig {
+        let yaml: DeviceYaml = serde_yaml_ng::from_str(&format!(
+            "device:\n  name: Unit\n  manufacturer: Maker\n  model: M1\n{extra}"
+        ))
+        .unwrap();
+        DeviceConfig { yaml }
+    }
+
+    #[test]
+    fn temperature_roles_follow_variant_table() {
+        let left = config_with_device("  variant: left\n");
+        assert_eq!(
+            left.temperature_roles().unwrap(),
+            ["intake", "supply", "extract", "exhaust"]
+        );
+        let right = config_with_device("  variant: right\n");
+        assert_eq!(
+            right.temperature_roles().unwrap(),
+            ["extract", "exhaust", "intake", "supply"]
+        );
+    }
+
+    #[test]
+    fn temperature_roles_override() {
+        let c = config_with_device(
+            "  variant: left\n  temperature_sensors:\n    t1: intake\n    t2: supply\n    t3: exhaust\n    t4: extract\n",
+        );
+        assert_eq!(
+            c.temperature_roles().unwrap(),
+            ["intake", "supply", "exhaust", "extract"]
+        );
+        // Invalid: role twice, missing probe, unknown role, unknown probe.
+        for bad in [
+            "    t1: intake\n    t2: supply\n    t3: supply\n    t4: extract\n",
+            "    t1: intake\n    t2: supply\n    t3: exhaust\n",
+            "    t1: intake\n    t2: supply\n    t3: exhaust\n    t4: outdoor\n",
+            "    t1: intake\n    t2: supply\n    t3: exhaust\n    t5: extract\n",
+        ] {
+            let c = config_with_device(&format!("  temperature_sensors:\n{bad}"));
+            assert!(c.temperature_roles().is_err(), "accepted: {bad}");
+        }
     }
 
     #[test]

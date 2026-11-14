@@ -18,6 +18,11 @@ and this project uses Calendar Versioning (`YYYY.M.D`).
   `strip_name_prefix` drops words the device name already says ("Bypass Upper
   Threshold" on "Novus Bypass" → "Upper Threshold"). Unique IDs and default
   entity IDs are unchanged, so existing entity IDs, history and automations stay.
+- **Per-unit temperature probe roles**: optional `temperature_sensors` in
+  `device.yaml` (`t1`..`t4` -> `intake` | `supply` | `extract` | `exhaust`)
+  overrides the variant table for units whose probes don't match it. Validated
+  on load (all four probes, each role once). Unique IDs are unchanged; only the
+  names and state topics of the affected probes change.
 - `validate-config` rejects duplicate or non-slug child device ids and children
   without a name or topic prefix.
 
