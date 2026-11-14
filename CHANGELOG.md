@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project uses Calendar Versioning (`YYYY.M.D`).
 
+## [Unreleased] - 2026-11-14
+
+### Added
+- **Home Assistant child devices** (HA 2026.11+): parts of the unit now appear as
+  their own devices below "Paul Novus 300" — Fan Levels, Time Program, Sensor
+  Input, Bypass, Frost Protection, Post Heating, Ground Heat Exchanger, Filter,
+  Messages, Components and Control Panel. The grouping is a `child_devices:` list
+  at the top of `config/registers.yaml` (topic prefixes, longest match wins;
+  unmatched entities stay on the main device). Works in per-entity discovery
+  (`dev.cdev`) and device-bundle discovery (`cdevs`). Optional
+  `strip_name_prefix` drops words the device name already says ("Bypass Upper
+  Threshold" on "Novus Bypass" → "Upper Threshold"). Unique IDs and default
+  entity IDs are unchanged, so existing entity IDs, history and automations stay.
+- `validate-config` rejects duplicate or non-slug child device ids and children
+  without a name or topic prefix.
+
 ## [2026.11.4] - 2026-11-04
 
 ### Added

@@ -1,3 +1,78 @@
+# Home Assistant child devices — parts of the unit shown as their own devices
+# below the main "Paul Novus 300" device (HA 2026.11+). Entities are assigned by
+# topic prefix; the longest matching prefix wins and unmatched entities stay on
+# the main device. `id` is appended to the main device identifier — changing it
+# creates a new device in HA. `strip_name_prefix` drops leading words from the
+# entity name so the friendly name ("<device> <entity>") doesn't repeat them.
+child_devices:
+- id: fan_levels
+  name: Novus Fan Levels
+  topics:
+  - bus/ventilation/fan_speed_
+  - bus/ventilation/imbalance_
+  - bus/ventilation/imblanace_
+  - bus/ventilation/boost_duration
+  - bus/ventilation/unoccupied
+  - bus/ventilation/summer
+- id: time_program
+  name: Novus Time Program
+  topics:
+  - bus/ventilation/automatic/time_program
+  - bus/ventilation/automatic/mode
+  strip_name_prefix:
+  - Time Program
+- id: sensor_input
+  name: Novus Sensor Input
+  topics:
+  - bus/ventilation/automatic/sensor
+- id: bypass
+  name: Novus Bypass
+  topics:
+  - bus/bypass
+  strip_name_prefix:
+  - Bypass
+- id: frost_protection
+  name: Novus Frost Protection
+  topics:
+  - bus/frost_protection
+  - bus/defroster
+  strip_name_prefix:
+  - Frost Protection
+- id: post_heating
+  name: Novus Post Heating
+  topics:
+  - bus/post_heating
+  strip_name_prefix:
+  - Post Heating
+- id: ground_heat_exchanger
+  name: Novus Ground Heat Exchanger
+  topics:
+  - bus/ground_pipe_diverter_valve
+  strip_name_prefix:
+  - GHE-Flap
+- id: filter
+  name: Novus Filter
+  topics:
+  - bus/filter_age
+  strip_name_prefix:
+  - Filter
+- id: messages
+  name: Novus Messages
+  topics:
+  - bus/messages
+- id: components
+  name: Novus Components
+  topics:
+  - bus/devices
+  - bus/system/bus_version
+- id: control_panel
+  name: Novus Control Panel
+  topics:
+  - bus/tft
+  - bus/screen_dimming
+  - bus/system/language
+  - bus/system/date
+  - bus/system/time
 sensors:
 - address: '0x00'
   payload:

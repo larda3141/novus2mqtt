@@ -46,7 +46,20 @@ pub fn generate_discovery(
         let entity_type = &ha.entity_type;
         let ha_config = ha.config.as_ref().cloned().unwrap_or_default();
         let unique_id = DeviceConfig::entity_unique_id(entity);
-        let name = DeviceConfig::entity_name(entity);
+        let mut name = DeviceConfig::entity_name(entity);
+
+        // Parts of the unit become HA child devices of the main device.
+        let mut dev = device_info.clone();
+        if let Some(child) = config.child_device_for(entity) {
+            dev.insert(
+                "cdev".into(),
+                json!({
+                    "ids": [config.child_identifier(child)],
+                    "name": child.name,
+                }),
+            );
+            name = child.display_name(&name);
+        }
 
         let mut enriched = Map::new();
         enriched.insert("~".into(), json!(mqtt_base_prefix));
@@ -56,7 +69,7 @@ pub fn generate_discovery(
             json!(format!("{entity_type}.{}", slugify(&unique_id))),
         );
         enriched.insert("o".into(), origin.clone());
-        enriched.insert("dev".into(), Value::Object(device_info.clone()));
+        enriched.insert("dev".into(), Value::Object(dev));
         enriched.insert("avty".into(), availability.clone());
         enriched.insert("avty_mode".into(), json!("all"));
         enriched.insert("payload_available".into(), json!("online"));
@@ -190,11 +203,14 @@ pub fn generate_device_discovery(
         .as_object()
         .expect("discovery payload must be a JSON object");
 
+    // The root `dev` describes the main device only; child devices go to `cdevs`.
+    let mut root_dev = first_payload.get("dev").cloned().unwrap_or(json!({}));
+    if let Some(obj) = root_dev.as_object_mut() {
+        obj.remove("cdev");
+    }
+
     let mut device_payload = Map::new();
-    device_payload.insert(
-        "dev".into(),
-        first_payload.get("dev").cloned().unwrap_or(json!({})),
-    );
+    device_payload.insert("dev".into(), root_dev);
     device_payload.insert(
         "o".into(),
         first_payload.get("o").cloned().unwrap_or(json!({})),
@@ -209,6 +225,8 @@ pub fn generate_device_discovery(
     device_payload.insert("payload_not_available".into(), json!("offline"));
 
     let mut cmps = Map::new();
+    // Child devices in first-seen order: (identifier, name, components).
+    let mut cdevs: Vec<(Value, Value, Map<String, Value>)> = Vec::new();
     for msg in &component_messages {
         let Some(payload) = msg.payload.as_object() else {
             continue;
@@ -225,6 +243,17 @@ pub fn generate_device_discovery(
         let parts: Vec<&str> = msg.topic.split('/').collect();
         let platform = if parts.len() > 1 { parts[1] } else { "sensor" };
 
+        let child = payload
+            .get("dev")
+            .and_then(|d| d.get("cdev"))
+            .and_then(|c| c.as_object())
+            .map(|c| {
+                (
+                    c.get("ids").cloned().unwrap_or(Value::Null),
+                    c.get("name").cloned().unwrap_or(Value::Null),
+                )
+            });
+
         let mut component_cfg = payload.clone();
         for root_key in &[
             "dev",
@@ -239,14 +268,38 @@ pub fn generate_device_discovery(
         }
         component_cfg.insert("p".into(), json!(platform));
 
-        cmps.insert(unique_id.to_string(), Value::Object(component_cfg));
+        match child {
+            Some((ids, name)) => {
+                if let Some(entry) = cdevs.iter_mut().find(|(i, _, _)| *i == ids) {
+                    entry
+                        .2
+                        .insert(unique_id.to_string(), Value::Object(component_cfg));
+                } else {
+                    let mut child_cmps = Map::new();
+                    child_cmps.insert(unique_id.to_string(), Value::Object(component_cfg));
+                    cdevs.push((ids, name, child_cmps));
+                }
+            }
+            None => {
+                cmps.insert(unique_id.to_string(), Value::Object(component_cfg));
+            }
+        }
     }
 
-    if cmps.is_empty() {
+    if cmps.is_empty() && cdevs.is_empty() {
         return Vec::new();
     }
 
-    device_payload.insert("cmps".into(), Value::Object(cmps));
+    if !cmps.is_empty() {
+        device_payload.insert("cmps".into(), Value::Object(cmps));
+    }
+    if !cdevs.is_empty() {
+        let list: Vec<Value> = cdevs
+            .into_iter()
+            .map(|(ids, name, child_cmps)| json!({"ids": ids, "name": name, "cmps": child_cmps}))
+            .collect();
+        device_payload.insert("cdevs".into(), Value::Array(list));
+    }
 
     vec![DiscoveryMessage {
         topic: format!("{hass_prefix}/device/{discovery_node}/config"),
@@ -623,5 +676,99 @@ mod tests {
         assert!(!cmps.is_empty(), "cmps map is empty");
         assert!(messages[0].topic.contains("/device/"));
         assert!(messages[0].topic.ends_with("/config"));
+    }
+
+    /// Every configured child device gets entities, child identifiers differ
+    /// from the parent, and stripped names no longer start with the prefix.
+    #[test]
+    fn discovery_assigns_child_devices() {
+        let path = Path::new("config/device.yaml");
+        if !path.exists() {
+            return;
+        }
+        let config = DeviceConfig::load(path).unwrap();
+        let children = config.yaml.child_devices.clone().unwrap_or_default();
+        let messages = generate_discovery(&config, "homeassistant", "novus2mqtt/test-device");
+        let parent_id = config.device_identifier();
+
+        for child in &children {
+            let child_id = config.child_identifier(child);
+            assert_ne!(child_id, parent_id);
+            let mine: Vec<_> = messages
+                .iter()
+                .filter(|m| m.payload["dev"]["cdev"]["ids"][0].as_str() == Some(child_id.as_str()))
+                .collect();
+            assert!(
+                !mine.is_empty(),
+                "child device '{}' matches no entity — check its topic prefixes",
+                child.id
+            );
+            for msg in mine {
+                assert_eq!(msg.payload["dev"]["cdev"]["name"], json!(child.name));
+                assert_eq!(msg.payload["dev"]["identifiers"][0], json!(parent_id));
+                let name = msg.payload["name"].as_str().unwrap();
+                for p in &child.strip_name_prefix {
+                    assert!(
+                        !name
+                            .to_lowercase()
+                            .starts_with(&format!("{} ", p.to_lowercase())),
+                        "name '{name}' still starts with '{p}'"
+                    );
+                }
+            }
+        }
+        // Entities without a matching prefix stay on the main device.
+        assert!(
+            messages
+                .iter()
+                .any(|m| m.payload["dev"].get("cdev").is_none()),
+            "main device has no entities left"
+        );
+    }
+
+    /// Device-bundle mode: children go to `cdevs`, the root `dev` has no
+    /// `cdev`, and no component is lost or duplicated.
+    #[test]
+    fn device_discovery_emits_child_devices() {
+        let path = Path::new("config/device.yaml");
+        if !path.exists() {
+            return;
+        }
+        let config = DeviceConfig::load(path).unwrap();
+        let n_children = config.yaml.child_devices.as_ref().map_or(0, |c| c.len());
+        let n_components =
+            generate_discovery(&config, "homeassistant", "novus2mqtt/test-device").len();
+        let messages =
+            generate_device_discovery(&config, "homeassistant", "novus2mqtt/test-device");
+        let payload = &messages[0].payload;
+
+        assert!(
+            payload["dev"].get("cdev").is_none(),
+            "root dev carries cdev"
+        );
+        let root = payload["cmps"].as_object().map_or(0, |m| m.len());
+        let cdevs = payload["cdevs"].as_array().cloned().unwrap_or_default();
+        assert_eq!(cdevs.len(), n_children);
+
+        let mut ids = std::collections::HashSet::new();
+        let mut in_children = 0;
+        for c in &cdevs {
+            assert!(c["ids"].is_array() && c["name"].is_string());
+            let cmps = c["cmps"].as_object().unwrap();
+            assert!(!cmps.is_empty());
+            in_children += cmps.len();
+            for key in cmps.keys() {
+                assert!(ids.insert(key.clone()), "component {key} duplicated");
+            }
+        }
+        for key in payload["cmps"]
+            .as_object()
+            .into_iter()
+            .flatten()
+            .map(|(k, _)| k)
+        {
+            assert!(ids.insert(key.clone()), "component {key} duplicated");
+        }
+        assert_eq!(root + in_children, n_components);
     }
 }

@@ -85,6 +85,18 @@ Only set fields the inference can't get right:
 - `tbc: true` — "to be confirmed", reverse-engineering in progress; usually paired with
   `expose_ha: false`.
 
+## Child devices (parts of the unit)
+
+`child_devices:` at the top of `config/registers.yaml` groups entities into HA child
+devices below the main device (HA 2026.11+). Each child has `id` (slug, appended to the
+main identifier — changing it creates a new HA device), `name`, `topics` (prefixes; the
+longest match wins, unmatched entities stay on the main device) and optional
+`strip_name_prefix`. HA builds friendly names as `<child name> <entity name>` (the parent
+name is not included), so strip words the child name already says. New register under an
+existing topic prefix lands on the right child automatically; a new prefix needs a child
+entry or stays on the main device. Child devices accept only `identifiers` and `name` and
+inherit the parent area.
+
 ## Entity type cheat sheet
 
 | Type | Use for | Notes |
